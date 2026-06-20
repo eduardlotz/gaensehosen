@@ -1,0 +1,49 @@
+.modal {
+  padding: 8px;
+}
+
+.header {
+  padding: 12px 16px;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -2%;
+}
+
+.intro {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.actions {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 16px;
+
+  button {
+    width: 100%;
+  }
+}
+
+.iconButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  .searchClearIcon {
+    display: inline-flex;
+    transform: rotate(45deg);
+    transform-origin: 50% 50%;
+  }
+}
+
+.exportButton {
+  gap: 10px;
+  min-height: 52px;
+}

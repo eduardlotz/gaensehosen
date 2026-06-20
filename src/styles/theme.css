@@ -1,0 +1,57 @@
+:root {
+  --font-sans: "Open Sauce Two", "Helvetica Neue", Arial, system-ui, -apple-system, sans-serif;
+  --color-background: #ffffff;
+  --color-background-rgb: 255 255 255;
+  --color-surface: #ffffff;
+  --color-surface-soft: #eeeeec;
+  --color-text: #090909;
+  --color-text-muted: #8d8d90;
+  --color-text-subtle: #c7c7c9;
+  --color-border: #dededb;
+  --color-brand: #0321ed;
+  --color-brand-text: #ffffff;
+  --shadow-brand: 0 12px 28px rgb(4 55 255 / 0.22);
+  --color-overlay: rgb(248 248 246 / 0.78);
+  --radius-control: 22px;
+  --radius-surface: 18px;
+  --space-page-x: 32px;
+  --space-page-y: 132px;
+}
+
+.themeLight {
+  --color-background: #ffffff;
+  --color-background-rgb: 255 255 255;
+  --color-surface: #ffffff;
+  --color-surface-soft: #eeeeec;
+  --color-text: #090909;
+  --color-text-muted: #8d8d90;
+  --color-text-subtle: #c7c7c9;
+  --color-border: #dededb;
+  --color-brand: #0321ed;
+  --color-brand-text: #ffffff;
+  --shadow-brand: 0 12px 28px rgb(4 55 255 / 0.22);
+  --color-overlay: rgb(248 248 246 / 0.78);
+  --radius-control: 22px;
+  --radius-surface: 18px;
+  --space-page-x: 32px;
+  --space-page-y: 132px;
+}
+
+.themeDark {
+  --color-background: #10100f;
+  --color-background-rgb: 16 16 15;
+  --color-surface: #181817;
+  --color-surface-soft: #242422;
+  --color-text: #f7f6f2;
+  --color-text-muted: #9d9c98;
+  --color-text-subtle: #5f5e5b;
+  --color-border: #31312f;
+  --color-brand: #4c6dff;
+  --color-brand-text: #ffffff;
+  --shadow-brand: 0 12px 32px rgb(76 109 255 / 0.34);
+  --color-overlay: rgb(16 16 15 / 0.78);
+  --radius-control: 22px;
+  --radius-surface: 18px;
+  --space-page-x: 32px;
+  --space-page-y: 132px;
+}

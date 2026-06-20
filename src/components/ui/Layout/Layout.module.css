@@ -1,0 +1,192 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+}
+
+.app {
+  padding: var(--page-padding, var(--space-page-y) var(--space-page-x) 96px);
+}
+
+.app::before,
+.app::after,
+.welcome::before,
+.welcome::after {
+  content: "";
+  position: fixed;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.app::before {
+  top: 0;
+  height: 120px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-background) 100%, transparent) 0%,
+    color-mix(in srgb, var(--color-background) 80%, transparent) 80%,
+    color-mix(in srgb, var(--color-background) 0%, transparent) 100%
+  );
+}
+
+.app::after {
+  bottom: 0;
+  height: 120px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-background) 0%, transparent) 0%,
+    color-mix(in srgb, var(--color-background) 40%, transparent) 80%,
+    color-mix(in srgb, var(--color-background) 100%, transparent) 100%
+  );
+}
+
+.welcome {
+  overflow: hidden;
+  padding: 20px 24px 64px;
+}
+
+.welcome::before {
+  top: 0;
+  height: 124px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-background) 66%, transparent) 0%,
+    color-mix(in srgb, var(--color-background) 32%, transparent) 54%,
+    color-mix(in srgb, var(--color-background) 0%, transparent) 100%
+  );
+}
+
+.welcome::after {
+  bottom: 0;
+  height: 164px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-background) 0%, transparent) 0%,
+    color-mix(in srgb, var(--color-background) 32%, transparent) 48%,
+    color-mix(in srgb, var(--color-background) 66%, transparent) 100%
+  );
+}
+
+.legal {
+  padding: 32px 24px 80px;
+}
+
+@media (max-width: 760px) {
+  .welcome {
+    padding: 28px 24px 72px;
+  }
+}
+
+.section {
+  width: min(var(--section-width), 100%);
+}
+
+.narrow {
+  --section-width: 560px;
+}
+
+.content {
+  --section-width: 760px;
+}
+
+.wide {
+  --section-width: 1210px;
+}
+
+.hugRow,
+.fillRow {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.hugRow {
+  width: max-content;
+  max-width: 100%;
+}
+
+.fillRow {
+  width: 100%;
+}
+
+.hugRow[data-gap="none"],
+.fillRow[data-gap="none"] {
+  gap: 0;
+}
+
+.hugRow[data-gap="xs"],
+.fillRow[data-gap="xs"] {
+  gap: 4px;
+}
+
+.hugRow[data-gap="sm"],
+.fillRow[data-gap="sm"] {
+  gap: 10px;
+}
+
+.hugRow[data-gap="md"],
+.fillRow[data-gap="md"] {
+  gap: 16px;
+}
+
+.hugRow[data-gap="lg"],
+.fillRow[data-gap="lg"] {
+  gap: 24px;
+}
+
+.hugRow[data-gap="xl"],
+.fillRow[data-gap="xl"] {
+  gap: 34px;
+}
+
+.hugRow[data-align="start"],
+.fillRow[data-align="start"] {
+  align-items: flex-start;
+}
+
+.hugRow[data-align="center"],
+.fillRow[data-align="center"] {
+  align-items: center;
+}
+
+.hugRow[data-align="end"],
+.fillRow[data-align="end"] {
+  align-items: flex-end;
+}
+
+.hugRow[data-align="stretch"],
+.fillRow[data-align="stretch"] {
+  align-items: stretch;
+}
+
+.hugRow[data-justify="start"],
+.fillRow[data-justify="start"] {
+  justify-content: flex-start;
+}
+
+.hugRow[data-justify="center"],
+.fillRow[data-justify="center"] {
+  justify-content: center;
+}
+
+.hugRow[data-justify="end"],
+.fillRow[data-justify="end"] {
+  justify-content: flex-end;
+}
+
+.hugRow[data-justify="between"],
+.fillRow[data-justify="between"] {
+  justify-content: space-between;
+}
+
+.hugRow[data-wrap="true"],
+.fillRow[data-wrap="true"] {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 860px) {
+  .app {
+    --page-padding: 80px 16px;
+  }
+}

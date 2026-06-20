@@ -1,0 +1,177 @@
+.wrapper {
+  --scribble-color: #c9c9cf;
+  --scribble-border-width: 1.5px;
+  --scribble-background: var(--color-surface);
+  --scribble-drop-shadow: drop-shadow(0 1px 1px rgb(20 22 31 / 0.08))
+    drop-shadow(0 7px 9px rgb(20 22 31 / 0.1));
+  position: relative;
+  display: flex;
+  width: min(508px, 100%);
+  min-width: 0;
+  height: 54px;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.wrapper[data-focused="true"] {
+  --scribble-color: var(--color-brand);
+  --scribble-border-width: 2.25px;
+  --scribble-drop-shadow: drop-shadow(0 1px 1px rgb(3 33 237 / 0.12))
+    drop-shadow(0 8px 12px rgb(3 33 237 / 0.16));
+  color: var(--color-brand);
+}
+
+.filterSource {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.borderShadow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  color: var(--scribble-color);
+  transition: filter 140ms ease;
+}
+
+.borderSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  border-radius: inherit;
+  filter: var(--scribble-filter) var(--scribble-drop-shadow);
+}
+
+.borderRect {
+  x: 3px;
+  y: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  rx: 25px;
+  ry: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: var(--scribble-border-width);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  width: calc(100% - 8px);
+  min-width: 0;
+  height: calc(100% - 8px);
+  margin: 4px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--scribble-background);
+  padding: 0 2px 0 16px;
+}
+
+.leadingIcon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  margin-right: 13px;
+  color: currentColor;
+}
+
+.leadingIcon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.input::placeholder {
+  color: #b7b7bd;
+  opacity: 1;
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.endContent {
+  flex: 0 0 auto;
+  margin-left: 14px;
+  color: #97979c;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.wrapper:not(:focus-within) .endContent,
+.wrapper:not(:focus-within) .clearButton {
+  display: none;
+}
+
+.clearButton {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 43px;
+  height: 43px;
+  margin-left: 12px;
+  border: 0;
+  border-radius: 22px;
+  background: #f4f4f4;
+  color: #24262c;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.clearButton:hover {
+  background: #ececec;
+}
+
+.clearButton:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .borderShadow,
+  .clearButton {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .content {
+    padding-left: 16px;
+  }
+
+  .leadingIcon {
+    margin-right: 9px;
+  }
+
+  .endContent {
+    display: none;
+  }
+}

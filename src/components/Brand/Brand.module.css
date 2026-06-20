@@ -1,0 +1,22 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -2%;
+  white-space: nowrap;
+}
+
+.logo {
+  height: 40px;
+  color: var(--color-brand);
+  fill: none;
+  stroke: currentColor;
+}
+
+.logoText {
+  fill: var(--color-text);
+  stroke: none;
+}
