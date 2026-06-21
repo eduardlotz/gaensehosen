@@ -1,14 +1,5 @@
-import {
-  Button,
-  FillRow,
-  IconButton,
-  ModalBackdrop,
-  ModalSurface,
-  SvgIcon,
-  Text,
-} from "../ui";
+import { Button, FullScreenDialog, ModalCloseButton, Text } from "../ui";
 import { t } from "../../i18n/messages";
-import plusIcon from "../../icons/plus.svg?raw";
 import type { Locale, Quote } from "../../store/collectionStore";
 import { serializeQuotesCsv } from "../../utils/quoteCsv";
 import styles from "./ExportModal.module.css";
@@ -58,22 +49,31 @@ export function ExportModal({
   }
 
   return (
-    <ModalBackdrop>
-      <ModalSurface aria-modal="true" className={styles.modal} role="dialog">
-        <FillRow align="start" className={styles.header} gap="xs">
-          <div>
-            <Text as="h2" className={styles.title} variant="title">
-              {t(locale, "exportTitle")}
-            </Text>
-          </div>
-          <IconButton
-            className={styles.iconButton}
-            onClick={onClose}
-            title={t(locale, "cancel")}
-          >
-            <SvgIcon className={styles.searchClearIcon} svg={plusIcon} />
-          </IconButton>
-        </FillRow>
+    <FullScreenDialog
+      aria-labelledby="export-dialog-title"
+      contentClassName={styles.modal}
+      onClose={onClose}
+    >
+      <ModalCloseButton
+        aria-label={t(locale, "cancel")}
+        onClick={onClose}
+        title={t(locale, "cancel")}
+      />
+
+      <div className={styles.content}>
+        <Text
+          as="h2"
+          className={styles.title}
+          id="export-dialog-title"
+          variant="title"
+        >
+          <span className={styles.quoteMark}>„</span>
+          {t(locale, "exportTitle")}
+          <span className={styles.quoteMark}>“</span>
+        </Text>
+        <Text className={styles.intro} tone="muted" variant="body">
+          {t(locale, "exportIntro")}
+        </Text>
 
         <div className={styles.actions}>
           <Button className={styles.exportButton} onClick={exportJson}>
@@ -83,7 +83,7 @@ export function ExportModal({
             {t(locale, "exportCsv")}
           </Button>
         </div>
-      </ModalSurface>
-    </ModalBackdrop>
+      </div>
+    </FullScreenDialog>
   );
 }

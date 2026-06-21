@@ -1,1 +1,6 @@
-export { FullScreenDialog, ModalBackdrop, ModalSurface } from "./ModalSurface";
+export {
+  FullScreenDialog,
+  ModalBackdrop,
+  ModalCloseButton,
+  ModalSurface,
+} from "./ModalSurface";

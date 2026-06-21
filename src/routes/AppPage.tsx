@@ -25,9 +25,18 @@ import {
 } from "../components/Controls";
 import { ExportModal } from "../components/ExportModal";
 import { FloatingQuoteUtilityButton } from "../components/FloatingQuoteUtilityButton";
+import { HelpModal } from "../components/HelpModal";
 import { PrimaryQuoteButton } from "../components/PrimaryQuoteButton";
 import { WelcomeSlider, type WelcomeSlide } from "../components/WelcomeSlider";
-import { Button, Page, Section, SvgIcon, Text } from "../components/ui";
+import {
+  Button,
+  FullScreenDialog,
+  ModalCloseButton,
+  Page,
+  Section,
+  SvgIcon,
+  Text,
+} from "../components/ui";
 import { QuoteFormModal } from "../components/QuoteFormModal";
 import { t } from "../i18n/messages";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -66,6 +75,7 @@ export function AppPage() {
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [mobileOptionsOpen, setMobileOptionsOpen] =
     useState<MobileControlOptionsOpen>(null);
@@ -93,6 +103,7 @@ export function AppPage() {
   }, [query, quotes]);
 
   const hasQuotes = quotes.length > 0;
+  const modalOpen = formOpen || exportOpen || helpOpen || resetConfirmOpen;
   const hasActiveSearch = query.trim().length > 0;
   const hasNoResults = hasQuotes && filteredQuotes.length === 0;
   const showClearSearchButton = hasNoResults && hasActiveSearch;
@@ -123,12 +134,13 @@ export function AppPage() {
     resetApp();
     setQuery("");
     setExportOpen(false);
+    setHelpOpen(false);
     setResetConfirmOpen(false);
     closeForm();
   }
 
   function openHelpDialog() {
-    // Placeholder for the future help dialog.
+    setHelpOpen(true);
   }
 
   async function handleImportFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -189,33 +201,6 @@ export function AppPage() {
     };
   }, [formOpen]);
 
-  useEffect(() => {
-    if (!resetConfirmOpen) {
-      return;
-    }
-
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setResetConfirmOpen(false);
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-    };
-  }, [resetConfirmOpen]);
-
   return (
     <LayoutGroup id="quote-action-layout">
       <Page
@@ -231,6 +216,7 @@ export function AppPage() {
             gridMode={activeGridMode}
             locale={locale}
             masonryColumns={masonryColumns}
+            modalOpen={modalOpen}
             mobileOptionsOpen={mobileOptionsOpen}
             onFontSizeChange={setFontSize}
             onGridModeChange={setGridMode}
@@ -242,15 +228,14 @@ export function AppPage() {
             onQuoteClick={openEditForm}
             onResetClick={() => setResetConfirmOpen(true)}
             onThemeChange={setTheme}
-            formOpen={formOpen}
             query={query}
             setQuery={setQuery}
             theme={theme}
           />
         ) : (
           <WelcomeScreen
-            formOpen={formOpen}
             locale={locale}
+            modalOpen={modalOpen}
             onHelpClick={openHelpDialog}
             onImportClick={() => importInputRef.current?.click()}
             onLocaleChange={setLocale}
@@ -332,12 +317,28 @@ export function AppPage() {
           ) : null}
         </AnimatePresence>
 
-        <ExportModal
-          locale={locale}
-          onClose={() => setExportOpen(false)}
-          open={exportOpen}
-          quotes={quotes}
-        />
+        <AnimatePresence initial={false}>
+          {exportOpen ? (
+            <ExportModal
+              key="export-dialog"
+              locale={locale}
+              onClose={() => setExportOpen(false)}
+              open={exportOpen}
+              quotes={quotes}
+            />
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence initial={false}>
+          {helpOpen ? (
+            <HelpModal
+              key="help-dialog"
+              locale={locale}
+              onClose={() => setHelpOpen(false)}
+              open={helpOpen}
+            />
+          ) : null}
+        </AnimatePresence>
 
         <AnimatePresence initial={false}>
           {resetConfirmOpen ? (
@@ -371,9 +372,9 @@ type CollectionAppProps = {
   fontSize: FontSize;
   formMode: FormMode;
   gridMode: GridMode;
-  formOpen: boolean;
   locale: Locale;
   masonryColumns: number;
+  modalOpen: boolean;
   mobileOptionsOpen: MobileControlOptionsOpen;
   query: string;
   theme: ThemeName;
@@ -394,10 +395,10 @@ function CollectionApp({
   filteredQuotes,
   fontSize,
   formMode,
-  formOpen,
   gridMode,
   locale,
   masonryColumns,
+  modalOpen,
   mobileOptionsOpen,
   onExportClick,
   onFontSizeChange,
@@ -598,7 +599,7 @@ function CollectionApp({
       {hasNoResults ? (
         <NoResultsScreen
           formMode={formMode}
-          formOpen={formOpen}
+          formOpen={modalOpen}
           text={t(locale, "noResults")}
         />
       ) : (
@@ -606,7 +607,7 @@ function CollectionApp({
           filteredQuotes={filteredQuotes}
           fontSize={fontSize}
           formMode={formMode}
-          formOpen={formOpen}
+          formOpen={modalOpen}
           gridMode={gridMode}
           masonryColumns={masonryColumns}
           onQuoteClick={onQuoteClick}
@@ -702,55 +703,45 @@ function ResetConfirmDialog({
   onConfirm,
 }: ResetConfirmDialogProps) {
   return (
-    <motion.div
-      animate={{ opacity: 1 }}
-      className={styles.resetDialogBackdrop}
-      exit={{ opacity: 0 }}
-      initial={{ opacity: 0 }}
-      onMouseDown={onCancel}
-      role="presentation"
-      transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+    <FullScreenDialog
+      aria-labelledby="reset-dialog-title"
+      contentClassName={styles.resetDialog}
+      onClose={onCancel}
     >
-      <motion.div
-        aria-labelledby="reset-dialog-title"
-        aria-modal="true"
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className={styles.resetDialog}
-        exit={{ opacity: 0, scale: 0.94, y: 10 }}
-        initial={{ opacity: 0, scale: 0.96, y: 14 }}
-        onMouseDown={(event) => event.stopPropagation()}
-        role="dialog"
-        transition={{ duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
-      >
-        <Text
-          as="h2"
-          className={styles.resetDialogTitle}
-          id="reset-dialog-title"
-          variant="title"
-        >
-          {t(locale, "resetAppTitle")}
-        </Text>
+      <ModalCloseButton
+        aria-label={t(locale, "cancel")}
+        onClick={onCancel}
+        title={t(locale, "cancel")}
+      />
 
-        <div className={styles.resetDialogActions}>
-          <Button
-            icon={<SvgIcon svg={trashIcon} />}
-            onClick={onConfirm}
-            type="button"
-            variant="danger"
-          >
-            {t(locale, "resetAppConfirm")}
-          </Button>
-          <Button
-            icon={<SvgIcon svg={backArrowIcon} />}
-            onClick={onCancel}
-            type="button"
-            variant="default"
-          >
-            {t(locale, "resetAppCancel")}
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
+      <Text
+        as="h2"
+        className={styles.resetDialogTitle}
+        id="reset-dialog-title"
+        variant="title"
+      >
+        {t(locale, "resetAppTitle")}
+      </Text>
+
+      <div className={styles.resetDialogActions}>
+        <Button
+          icon={<SvgIcon svg={trashIcon} />}
+          onClick={onConfirm}
+          type="button"
+          variant="danger"
+        >
+          {t(locale, "resetAppConfirm")}
+        </Button>
+        <Button
+          icon={<SvgIcon svg={backArrowIcon} />}
+          onClick={onCancel}
+          type="button"
+          variant="default"
+        >
+          {t(locale, "resetAppCancel")}
+        </Button>
+      </div>
+    </FullScreenDialog>
   );
 }
 
@@ -837,8 +828,8 @@ function AnimatedPondDrawing() {
 }
 
 type WelcomeScreenProps = {
-  formOpen: boolean;
   locale: Locale;
+  modalOpen: boolean;
   welcomeSlides: WelcomeSlide[];
   onHelpClick: () => void;
   onImportClick: () => void;
@@ -846,8 +837,8 @@ type WelcomeScreenProps = {
 };
 
 function WelcomeScreen({
-  formOpen,
   locale,
+  modalOpen,
   onHelpClick,
   onImportClick,
   onLocaleChange,
@@ -861,7 +852,7 @@ function WelcomeScreen({
 
       <Section
         className={styles.emptyContent}
-        data-form-active={formOpen}
+        data-form-active={modalOpen}
         size="wide"
       >
         <WelcomeSlider slides={welcomeSlides} />

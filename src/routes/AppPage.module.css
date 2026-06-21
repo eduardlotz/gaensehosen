@@ -299,7 +299,7 @@
 }
 
 .pondDrawingWaterLayer {
-  opacity: 0.58;
+  /* opacity: 0.58; */
 }
 
 .emptyContent {
@@ -606,32 +606,22 @@
     0 2px 7px rgb(255 31 31 / 0.08);
 }
 
-.resetDialogBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgb(var(--color-background-rgb) / 0.34);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-}
-
 .resetDialog {
   display: grid;
+  align-content: center;
   justify-items: center;
   gap: 24px;
   width: min(520px, 100%);
+  min-height: calc(100vh - 100px);
   color: var(--color-text);
 }
 
 .resetDialogTitle {
   color: var(--color-text);
-  font-size: clamp(2rem, 7vw, 4rem);
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 0.95;
+  font-size: clamp(1.625rem, 4vw, 1.875rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
   text-align: center;
 }
 
@@ -740,10 +730,11 @@
 
 .focusListShell {
   --quote-font-size: 16px;
+  --focus-shell-top-offset: 108px;
   position: relative;
   z-index: 0;
   width: 100%;
-  height: calc(100vh - 156px);
+  height: calc(100vh - var(--focus-shell-top-offset));
   min-height: 420px;
   margin: -24px auto 0;
   transition:
@@ -753,11 +744,37 @@
 }
 
 .focusListShell::before {
-  content: none;
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: min(132px, 28%);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-background) 100%, transparent) 0%,
+    color-mix(in srgb, var(--color-background) 78%, transparent) 58%,
+    color-mix(in srgb, var(--color-background) 0%, transparent) 100%
+  );
 }
 
 .focusListShell::after {
-  content: none;
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: min(132px, 28%);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-background) 0%, transparent) 0%,
+    color-mix(in srgb, var(--color-background) 78%, transparent) 42%,
+    color-mix(in srgb, var(--color-background) 100%, transparent) 100%
+  );
 }
 
 .focusListShell[data-form-active="true"] {
@@ -772,6 +789,8 @@
 }
 
 .focusList {
+  position: relative;
+  z-index: 0;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
@@ -788,8 +807,7 @@
   gap: 64px;
   width: min(1040px, 100%);
   margin: 0 auto;
-  padding: var(--focus-padding-start, 15vh) 0
-    var(--focus-padding-end, 15vh);
+  padding: var(--focus-padding-start, 15vh) 0 var(--focus-padding-end, 15vh);
 }
 
 .focusQuoteCard {
@@ -892,6 +910,10 @@
 }
 
 @media (max-width: 860px) {
+  .focusListShell {
+    --focus-shell-top-offset: 56px;
+  }
+
   .navbar {
     padding: 16px;
   }
@@ -1003,8 +1025,12 @@
   }
 
   .searchInput {
+    position: absolute;
+    inset: 0;
     flex: 0 1 0;
-    width: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
     opacity: 0;
     pointer-events: none;
   }
@@ -1059,8 +1085,10 @@
   }
 
   .navbar[data-mobile-search-open="true"] .searchInput {
+    position: static;
     flex: 1 1 auto;
     width: 100%;
+    height: auto;
     opacity: 1;
     pointer-events: auto;
   }
@@ -1088,8 +1116,7 @@
 @media (prefers-reduced-motion: reduce) {
   .actionMenu,
   .actionMenuItem,
-  .resetDialog,
-  .resetDialogBackdrop {
+  .resetDialog {
     animation: none !important;
     transition: none !important;
   }

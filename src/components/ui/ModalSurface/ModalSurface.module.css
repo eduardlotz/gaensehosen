@@ -1,31 +1,72 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
-  display: grid;
-  /* place-items: center; */
-  justify-content: center;
-  align-items: flex-start;
-  padding: 35vh 24px;
-  background: color-mix(in srgb, var(--color-text) 12%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  z-index: 80;
+  display: block;
+  padding: 20px 24px 80px;
+  overflow-y: auto;
+  background: transparent;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .fullScreenDialog {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
+  display: block;
+  width: min(760px, calc(100vw - 48px));
+  min-height: calc(100vh - 100px);
+  margin: 0 auto;
+  color: var(--color-text);
+  outline: 0;
 }
 
 .surface {
   width: min(560px, 100%);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
-  background: color-mix(in srgb, var(--color-background) 88%, transparent);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  box-shadow: 0 24px 80px rgb(0 0 0 / 0.18);
+  background: transparent;
+}
+
+.closeButton {
+  --button-bg: var(--color-surface-soft);
+  --button-bg-hover: color-mix(
+    in srgb,
+    var(--color-surface-soft) 92%,
+    var(--color-text) 8%
+  );
+  --button-radius: 18px;
+  --button-shadow: none;
+  --button-shadow-hover: none;
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  z-index: 1;
+}
+
+.closeIcon {
+  display: inline-flex;
+  transform: rotate(45deg);
+  transform-origin: 50% 50%;
+}
+
+.closeIcon,
+.closeIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 620px) {
+  .backdrop {
+    padding: 18px 18px 72px;
+  }
+
+  .fullScreenDialog {
+    width: min(100%, calc(100vw - 36px));
+  }
+
+  .closeButton {
+    top: 18px;
+    right: 18px;
+  }
 }
