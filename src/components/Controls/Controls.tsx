@@ -123,6 +123,16 @@ function MobileControls({
     onMobileOptionsOpenChange?.(optionsOpen);
   }, [onMobileOptionsOpenChange, optionsOpen]);
 
+  function selectGridMode(nextGridMode: GridMode) {
+    onGridModeChange(nextGridMode);
+    onMobileOptionsOpenChange?.(null);
+  }
+
+  function selectFontSize(nextFontSize: FontSize) {
+    onFontSizeChange(nextFontSize);
+    onMobileOptionsOpenChange?.(null);
+  }
+
   return (
     <>
       <AnimatePresence initial={false}>
@@ -134,6 +144,7 @@ function MobileControls({
             exit={{ opacity: 0, x: -28, filter: "blur(10px)" }}
             initial={{ opacity: 0, x: -28, filter: "blur(10px)" }}
             key="mobile-grid-dock"
+            layoutRoot
             transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
           >
             <AnimatePresence initial={false} mode="popLayout">
@@ -150,7 +161,7 @@ function MobileControls({
                     gridMode={gridMode}
                     layoutId="mobile-grid-control-active"
                     locale={locale}
-                    onGridModeChange={onGridModeChange}
+                    onGridModeChange={selectGridMode}
                   />
                 </motion.div>
               ) : (
@@ -210,6 +221,7 @@ function MobileControls({
             exit={{ opacity: 0, x: 28, filter: "blur(10px)" }}
             initial={{ opacity: 0, x: 28, filter: "blur(10px)" }}
             key="mobile-font-size-dock"
+            layoutRoot
             transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
           >
             <AnimatePresence initial={false} mode="popLayout">
@@ -226,7 +238,7 @@ function MobileControls({
                     fontSize={fontSize}
                     layoutId="mobile-font-size-control-active"
                     locale={locale}
-                    onFontSizeChange={onFontSizeChange}
+                    onFontSizeChange={selectFontSize}
                   />
                 </motion.div>
               ) : (

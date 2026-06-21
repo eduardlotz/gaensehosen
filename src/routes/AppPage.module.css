@@ -63,16 +63,26 @@
     0 1px 4px rgb(0 0 0 / 0.07);
 }
 
+:global(.themeDark) .searchBox {
+  --search-outline-shadow-color: rgb(255 255 255 / 0.08);
+}
+
 .searchBox[data-focus-ring="within"]:has(.searchInput:focus-visible) {
   border-radius: 16px;
 }
 
 .searchIcon {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   width: 16px;
   height: 16px;
   color: var(--color-brand);
+}
+
+:global(.themeDark) .searchIcon {
+  color: var(--color-text);
 }
 
 .searchIcon svg {
@@ -88,8 +98,9 @@
   outline: 0;
   background: transparent;
   color: var(--color-text);
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 500;
+  line-height: 1;
 }
 
 .searchInput::placeholder {
@@ -103,10 +114,19 @@
 }
 
 .searchClearButton {
-  --button-height: 36px;
-  --button-radius: 18px;
-  --button-icon-outer-padding: 10px;
-  --button-icon-inner-padding: 10px;
+  --button-bg: transparent;
+  --button-bg-hover: color-mix(
+    in srgb,
+    var(--color-surface-soft) 92%,
+    var(--color-text) 8%
+  );
+  --button-border: transparent;
+  --button-border-hover: transparent;
+  --button-radius: 16px;
+  --button-shadow: none;
+  --button-shadow-hover: none;
+  --button-icon-outer-padding: 8px;
+  --button-icon-inner-padding: 8px;
   flex: 0 0 auto;
   margin-right: -11px;
   color: var(--color-text);
@@ -398,6 +418,11 @@
     color 180ms ease;
 }
 
+:global(.themeDark) .optionsButton {
+  --options-outline-shadow-color: rgb(255 255 255 / 0.08);
+  --options-outline-shadow-color-hover: rgb(255 255 255 / 0.18);
+}
+
 .optionsButton:hover {
   border-color: rgb(0 0 0 / 0.18);
   background: color-mix(
@@ -409,6 +434,10 @@
     inset 0 0 0 1px var(--options-outline-shadow-color-hover),
     0 1px 2px rgb(0 0 0 / 0.08),
     0 2px 7px rgb(0 0 0 / 0.08);
+}
+
+:global(.themeDark) .optionsButton:hover {
+  border-color: rgb(255 255 255 / 0.16);
 }
 
 .optionsButton .buttonIcon {
@@ -492,6 +521,11 @@
     color 180ms ease;
 }
 
+:global(.themeDark) .actionMenuItem {
+  --action-menu-outline-shadow-color: rgb(255 255 255 / 0.08);
+  --action-menu-outline-shadow-color-hover: rgb(255 255 255 / 0.18);
+}
+
 .actionMenu[data-open] .actionMenuItem {
   animation: actionMenuItemIn 170ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -537,20 +571,25 @@
     0 2px 7px rgb(0 0 0 / 0.08);
 }
 
+:global(.themeDark) .actionMenuItem[data-highlighted] {
+  border-color: rgb(255 255 255 / 0.16);
+}
+
 .actionMenuItem:active {
   transform: scale(0.98);
 }
 
 .actionMenuItemDanger {
   --focus-ring-color: #ff1f1f;
-  --action-menu-outline-shadow-color: rgb(255 255 255 / 0.55);
-  --action-menu-outline-shadow-color-hover: rgb(255 31 31 / 0.18);
+  --action-menu-outline-shadow-color: rgb(255 31 31 / 0.12);
+  --action-menu-outline-shadow-color-hover: rgb(255 31 31 / 0.24);
   border-color: rgb(255 31 31 / 0.14);
   background: var(--color-surface);
   color: #ff1f1f;
   box-shadow:
-    inset 0 0 0 1px var(--action-menu-outline-shadow-color),
-    0 8px 24px rgb(255 31 31 / 0.08);
+    0 0 0 1.5px var(--action-menu-outline-shadow-color),
+    0 0.5px 1px rgb(255 31 31 / 0.05),
+    0 1px 4px rgb(255 31 31 / 0.06);
 }
 
 .actionMenuItemDanger .buttonIcon {
@@ -563,7 +602,8 @@
   color: #ff1f1f;
   box-shadow:
     inset 0 0 0 1px var(--action-menu-outline-shadow-color-hover),
-    0 10px 28px rgb(255 31 31 / 0.11);
+    0 1px 2px rgb(255 31 31 / 0.07),
+    0 2px 7px rgb(255 31 31 / 0.08);
 }
 
 .resetDialogBackdrop {
@@ -706,7 +746,6 @@
   height: calc(100vh - 156px);
   min-height: 420px;
   margin: -24px auto 0;
-  overflow: hidden;
   transition:
     filter 360ms ease,
     opacity 360ms ease,
@@ -714,37 +753,11 @@
 }
 
 .focusListShell::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: 2;
-  height: 132px;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgb(var(--color-background-rgb) / 0.92) 0%,
-    rgb(var(--color-background-rgb) / 0.46) 58%,
-    rgb(var(--color-background-rgb) / 0) 100%
-  );
+  content: none;
 }
 
 .focusListShell::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-  height: 156px;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgb(var(--color-background-rgb) / 0) 0%,
-    rgb(var(--color-background-rgb) / 0.46) 46%,
-    rgb(var(--color-background-rgb) / 0.92) 100%
-  );
+  content: none;
 }
 
 .focusListShell[data-form-active="true"] {
@@ -775,7 +788,7 @@
   gap: 64px;
   width: min(1040px, 100%);
   margin: 0 auto;
-  padding: var(--focus-padding-start, 15vh) clamp(12px, 3vw, 32px)
+  padding: var(--focus-padding-start, 15vh) 0
     var(--focus-padding-end, 15vh);
 }
 
@@ -784,7 +797,7 @@
   width: 100%;
   max-width: 100%;
   min-height: min(46vh, 420px);
-  padding: 0 0 0 calc(var(--quote-font-size) * 0.72);
+  padding: 0;
   background: transparent;
   color: var(--color-text);
   content-visibility: auto;
@@ -797,6 +810,15 @@
     filter 260ms ease,
     opacity 260ms ease,
     transform 260ms ease;
+}
+
+.focusQuoteCard .quoteText {
+  max-width: 100%;
+}
+
+.focusQuoteCard .openingQuoteMark {
+  position: static;
+  transform: none;
 }
 
 .focusQuoteCard[data-focus-state="visible"] {
@@ -980,10 +1002,6 @@
       padding 180ms ease;
   }
 
-  .searchIcon {
-    transform: translateX(1px);
-  }
-
   .searchInput {
     flex: 0 1 0;
     width: 0;
@@ -1049,6 +1067,11 @@
 
   .navbar[data-mobile-search-open="true"] .searchClearButton {
     display: inline-flex;
+    margin-right: -7px;
+  }
+
+  .quoteGrid {
+    padding-block-start: 24px;
   }
 }
 

@@ -1,4 +1,8 @@
+import { arc } from "motion/react";
+
 export const primaryButtonLayoutId = "primary-quote-action";
+
+const primaryButtonPath = arc();
 
 export const primaryButtonTransition = {
   layout: {
@@ -6,6 +10,7 @@ export const primaryButtonTransition = {
     stiffness: 620,
     damping: 28,
     mass: 0.42,
+    path: primaryButtonPath,
   },
 
   opacity: {

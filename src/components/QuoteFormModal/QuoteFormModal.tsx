@@ -14,7 +14,6 @@ import { PrimaryQuoteButton } from "../PrimaryQuoteButton";
 import { Button, SrOnly, SvgIcon, Text } from "../ui";
 import { t } from "../../i18n/messages";
 import type { Locale, Quote } from "../../store/collectionStore";
-import { useIsMobile } from "../../hooks/useIsMobile";
 import styles from "./QuoteFormModal.module.css";
 
 const placeholderQuotes = [
@@ -40,12 +39,6 @@ const inputBackgroundTransition = {
     duration: 0.14,
     ease: [0.2, 0.8, 0.2, 1],
   },
-} as const;
-
-const mobileEditorTransition = { duration: 0.35, ease: "circInOut" } as const;
-const desktopEditorTransition = {
-  duration: 0.18,
-  ease: [0.2, 0.8, 0.2, 1],
 } as const;
 
 type ActiveInputBackground = "text" | "source" | null;
@@ -93,7 +86,6 @@ export function QuoteFormModal({
   });
   const quoteInputRef = useRef<HTMLTextAreaElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
-  const isMobile = useIsMobile();
   const previouslyFocusedElementRef = useRef<HTMLElement | null>(
     document.activeElement instanceof HTMLElement
       ? document.activeElement
@@ -142,20 +134,6 @@ export function QuoteFormModal({
   if (!open) {
     return null;
   }
-
-  const editorMotion = isMobile
-    ? {
-        animate: { opacity: 1, filter: "blur(0px)", y: 0, scaleX: 1 },
-        exit: { opacity: 0, filter: "blur(8px)", y: -20, scaleX: 0.8 },
-        initial: { opacity: 0, filter: "blur(8px)", y: 20, scaleX: 0.9 },
-        transition: mobileEditorTransition,
-      }
-    : {
-        animate: { opacity: 1, filter: "blur(0px)", y: 0, scaleX: 1 },
-        exit: { opacity: 0, filter: "blur(0px)", y: 0, scaleX: 1 },
-        initial: { opacity: 0, filter: "blur(0px)", y: 0, scaleX: 1 },
-        transition: desktopEditorTransition,
-      };
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -278,15 +256,15 @@ export function QuoteFormModal({
         aria-label={quote ? t(locale, "editQuote") : t(locale, "addQuote")}
         aria-modal="true"
         className={styles.editor}
-        animate={editorMotion.animate}
-        exit={editorMotion.exit}
-        initial={editorMotion.initial}
+        exit={{ opacity: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         onKeyDown={trapFocus}
         onMouseDown={(event) => event.stopPropagation()}
         ref={editorRef}
         role="dialog"
         tabIndex={-1}
-        transition={editorMotion.transition}
+        transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
       >
         <Text as="h2" className={styles.title} variant="title">
           {quote ? t(locale, "editQuote") : t(locale, "addQuote")}
@@ -314,6 +292,7 @@ export function QuoteFormModal({
                         className={styles.inputFocusBackground}
                         exit={{ opacity: 0, scale: 0.96 }}
                         initial={{ opacity: 0, scale: 0.96 }}
+                        layout
                         layoutId={inputBackgroundLayoutId}
                         transition={inputBackgroundTransition}
                       />
@@ -340,31 +319,32 @@ export function QuoteFormModal({
               onBlur={clearInputBackground}
               onFocus={() => setActiveInputBackground("source")}
             >
-              <AnimatePresence initial={false}>
-                {activeInputBackground === "source" ? (
-                  <motion.span
-                    animate={{ opacity: 1, scale: 1 }}
-                    className={styles.inputFocusBackground}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    layoutId={inputBackgroundLayoutId}
-                    transition={inputBackgroundTransition}
-                  />
-                ) : null}
-              </AnimatePresence>
               <SrOnly>{t(locale, "source")}</SrOnly>
-              <input
-                className={styles.sourceInput}
-                onChange={updateSource}
-                placeholder={placeholderQuote.source}
-                size={Math.max(
-                  source.length,
-                  placeholderQuote.source.length,
-                  1,
-                )}
-                type="text"
-                value={source}
-              />
+              <span className={styles.sourceInputWrap}>
+                <span className={styles.sourceMirror} aria-hidden="true">
+                  <AnimatePresence initial={false}>
+                    {activeInputBackground === "source" ? (
+                      <motion.span
+                        animate={{ opacity: 1, scale: 1 }}
+                        className={styles.inputFocusBackground}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        layout
+                        layoutId={inputBackgroundLayoutId}
+                        transition={inputBackgroundTransition}
+                      />
+                    ) : null}
+                  </AnimatePresence>
+                  {source || placeholderQuote.source}
+                </span>
+                <input
+                  className={styles.sourceInput}
+                  onChange={updateSource}
+                  placeholder={placeholderQuote.source}
+                  type="text"
+                  value={source}
+                />
+              </span>
             </label>
           </div>
 

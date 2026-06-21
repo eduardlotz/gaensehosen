@@ -2,7 +2,7 @@
   --button-height: 48px;
   --button-radius: 20px;
   --button-text-size: 16px;
-  --button-text-padding-x: 18px;
+  --button-text-padding-x: 24px;
   --button-bg: linear-gradient(180deg, #4d64ff 0%, #0321ed 100%);
   --button-bg-hover: linear-gradient(180deg, #5870ff 0%, #1230ff 100%);
   --button-border: rgb(77 100 255 / 0.5);
@@ -19,19 +19,20 @@
     0 3px 7px 1.5px rgb(3 33 237 / 0.07),
     0 14px 32px rgb(3 33 237 / 0.22);
   --focus-ring-radius: var(--button-radius);
-  position: relative;
+  position: fixed;
+  bottom: 24px;
+  z-index: 45;
   isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 0;
   height: var(--button-height);
-  border: 1.5px solid var(--button-border);
+  border: 0;
   border-radius: var(--button-radius);
   padding: 0;
-  overflow: hidden;
-  background: var(--button-bg);
-  box-shadow: var(--button-shadow);
+  overflow: visible;
+  background: transparent;
   color: var(--button-fg);
   cursor: pointer;
   font: inherit;
@@ -40,32 +41,61 @@
   line-height: 1;
   text-decoration: none;
   text-shadow: 0 -0.5px 0.5px rgb(0 0 0 / 0.35);
-  transition:
-    background 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    color 180ms ease;
+  transform-origin: 50% 50%;
 }
 
-.root:disabled {
-  cursor: not-allowed;
-  opacity: 0.56;
-}
-
-.fixed {
-  position: fixed;
+.center {
   left: 0;
   right: 0;
-  bottom: 24px;
-  z-index: 45;
+  width: fit-content;
   margin-inline: auto;
 }
 
-.relative {
-  position: relative;
+.left {
+  left: 16px;
+  width: 60px;
 }
 
-.root:hover {
+.right {
+  right: 16px;
+  width: 60px;
+}
+
+.closeControls {
+  --button-bg: linear-gradient(180deg, #27304f 0%, #080b23 100%);
+  --button-bg-hover: linear-gradient(180deg, #303a62 0%, #0d1230 100%);
+  --button-border: rgb(8 11 35 / 0.72);
+  --button-border-hover: rgb(39 48 79 / 0.8);
+  --button-fg: #ffffff;
+  --button-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    inset 0 0 0 1px rgb(255 255 255 / 0.08),
+    0 2px 5px 1.5px rgb(8 11 35 / 0.16),
+    0 12px 30px rgb(8 11 35 / 0.26);
+  --button-shadow-hover:
+    inset 0 1px 0 rgb(255 255 255 / 0.26),
+    inset 0 0 0 1px rgb(255 255 255 / 0.1),
+    0 3px 7px 1.5px rgb(8 11 35 / 0.18),
+    0 14px 32px rgb(8 11 35 / 0.3);
+}
+
+.surface {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  border: 1.5px solid var(--button-border);
+  border-radius: var(--button-radius);
+  background: var(--button-bg);
+  box-shadow: var(--button-shadow);
+  pointer-events: none;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.root:hover .surface {
   border-color: var(--button-border-hover);
   background: var(--button-bg-hover);
   box-shadow: var(--button-shadow-hover);
@@ -79,39 +109,32 @@
   justify-content: center;
   align-self: stretch;
   min-width: 0;
-  height: 100%;
   padding: 0 var(--button-text-padding-x);
   overflow: hidden;
-  pointer-events: none;
 }
 
-.add .contentSlot {
+.closeControls .contentSlot {
   width: 100%;
   padding: 0;
 }
 
-.iconContent,
+.closeIcon,
+.closeIcon svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.closeIcon {
+  filter: drop-shadow(0 -0.5px 0.5px rgb(0 0 0 / 0.35));
+  transform: rotate(45deg);
+  transform-origin: 50% 50%;
+}
+
 .textContent {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 -0.5px 0.5px rgb(0 0 0 / 0.35));
-  transform-origin: 50% 60%;
-  will-change: opacity, filter, transform;
-}
-
-.iconContent,
-.plusIcon,
-.plusIcon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.plusIcon,
-.plusIcon svg {
-  display: block;
-}
-
-.textContent {
   white-space: nowrap;
 }

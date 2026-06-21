@@ -7,31 +7,12 @@ import {
   primaryButtonLayoutId,
   primaryButtonTransition,
 } from "../motionTransitions";
-import { useIsMobile } from "../../hooks/useIsMobile";
 import { SvgIcon } from "../ui";
 import { classNames } from "../ui/classNames";
 import styles from "./PrimaryQuoteButton.module.css";
 
 export type PrimaryQuoteButtonState =
   | { kind: "add"; position: "fixed"; label: string; onClick: () => void }
-  | {
-      kind: "closeLeftControls";
-      position: "fixed";
-      label: string;
-      onClick: () => void;
-    }
-  | {
-      kind: "closeRightControls";
-      position: "fixed";
-      label: string;
-      onClick: () => void;
-    }
-  | {
-      kind: "clearSearch";
-      position: "fixed";
-      label: string;
-      onClick: () => void;
-    }
   | { kind: "save"; position: "relative"; label: string; type: "submit" };
 
 type PrimaryQuoteButtonProps = Omit<
@@ -47,28 +28,28 @@ const contentTransition = {
   ease: [0.2, 0.8, 0.2, 1],
 } as const;
 
-const blurredContentAnimation = {
-  initial: { opacity: 0, filter: "blur(7px)", y: 2 },
-  animate: { opacity: 1, filter: "blur(0px)", y: 0 },
-  exit: { opacity: 0, filter: "blur(7px)", y: -2 },
+const iconContentAnimation = {
+  initial: { opacity: 0, filter: "blur(7px)", rotate: -45, scale: 0.92, y: 2 },
+  animate: { opacity: 1, filter: "blur(0px)", rotate: 0, scale: 1, y: 0 },
+  exit: { opacity: 0, filter: "blur(7px)", rotate: 45, scale: 0.92, y: -2 },
 } as const;
 
-const cleanContentAnimation = {
-  initial: { opacity: 0, filter: "blur(0px)", y: 0 },
-  animate: { opacity: 1, filter: "blur(0px)", y: 0 },
-  exit: { opacity: 0, filter: "blur(0px)", y: 0 },
+const textContentAnimation = {
+  initial: { opacity: 0, filter: "blur(7px)", scale: 0.98, y: 3 },
+  animate: { opacity: 1, filter: "blur(0px)", scale: 1, y: 0 },
+  exit: { opacity: 0, filter: "blur(7px)", scale: 0.98, y: -3 },
 } as const;
 
 type ButtonLayoutStyle = Pick<
   CSSProperties,
-  "borderRadius" | "height" | "maxWidth" | "width"
+  "borderRadius" | "height" | "maxWidth" | "padding" | "width"
 >;
 
 const buttonRadius = 20;
-const buttonHeight = 48;
-const addButtonWidth = 64;
-const fixedIconButtonWidth = 60;
-const primaryIconSize = 24;
+const addButtonHeight = 44;
+const addButtonWidth = 59;
+const saveButtonHeight = 48;
+const primaryIconSize = 20;
 const primaryIconStyle = {
   height: primaryIconSize,
   width: primaryIconSize,
@@ -81,10 +62,6 @@ export function PrimaryQuoteButton({
   textSize,
   ...props
 }: PrimaryQuoteButtonProps) {
-  const isMobile = useIsMobile();
-  const contentAnimation = isMobile
-    ? blurredContentAnimation
-    : cleanContentAnimation;
   const buttonConfig = match(state)
     .with({ kind: "add" }, ({ label, onClick }) => ({
       ariaLabel: label,
@@ -93,41 +70,9 @@ export function PrimaryQuoteButton({
       type: "button" as const,
       layoutStyle: {
         borderRadius: buttonRadius,
-        height: buttonHeight,
+        height: addButtonHeight,
+        padding: "12px 18px",
         width: addButtonWidth,
-      },
-    }))
-    .with({ kind: "closeLeftControls" }, ({ label, onClick }) => ({
-      ariaLabel: label,
-      onClick,
-      title: label,
-      type: "button" as const,
-      layoutStyle: {
-        borderRadius: buttonRadius,
-        height: buttonHeight,
-        width: fixedIconButtonWidth,
-      },
-    }))
-    .with({ kind: "closeRightControls" }, ({ label, onClick }) => ({
-      ariaLabel: label,
-      onClick,
-      title: label,
-      type: "button" as const,
-      layoutStyle: {
-        borderRadius: buttonRadius,
-        height: buttonHeight,
-        width: fixedIconButtonWidth,
-      },
-    }))
-    .with({ kind: "clearSearch" }, ({ label, onClick }) => ({
-      ariaLabel: label,
-      onClick,
-      title: label,
-      type: "button" as const,
-      layoutStyle: {
-        borderRadius: buttonRadius,
-        height: buttonHeight,
-        width: "fit-content",
       },
     }))
     .with({ kind: "save" }, ({ type }) => ({
@@ -137,8 +82,9 @@ export function PrimaryQuoteButton({
       type,
       layoutStyle: {
         borderRadius: buttonRadius,
-        height: buttonHeight,
+        height: saveButtonHeight,
         maxWidth: "100%",
+        padding: 0,
         width: "100%",
       },
     }))
@@ -151,8 +97,8 @@ export function PrimaryQuoteButton({
   };
 
   const buttonStyle: HTMLMotionProps<"button">["style"] = {
-    ...buttonConfig.layoutStyle,
     ...style,
+    ...buttonConfig.layoutStyle,
     ...(textSize === undefined ? {} : { fontSize: textSize }),
   };
 
@@ -175,22 +121,15 @@ export function PrimaryQuoteButton({
       {...props}
     >
       <motion.span
-        aria-hidden="true"
-        animate={{ borderRadius: buttonConfig.layoutStyle.borderRadius }}
-        className={styles.surface}
-        initial={false}
-        layout="preserve-aspect"
-        style={{
-          borderRadius: buttonConfig.layoutStyle.borderRadius,
-        }}
+        className={styles.contentSlot}
+        layout="position"
         transition={primaryButtonTransition}
-      />
-      <span className={styles.contentSlot}>
+      >
         <AnimatePresence mode="popLayout" initial={false}>
           {match(state)
             .with({ kind: "add" }, () => (
               <motion.span
-                {...contentAnimation}
+                {...iconContentAnimation}
                 className={styles.iconContent}
                 key="add"
                 transition={contentTransition}
@@ -202,47 +141,9 @@ export function PrimaryQuoteButton({
                 />
               </motion.span>
             ))
-            .with({ kind: "closeLeftControls" }, () => (
-              <motion.span
-                {...contentAnimation}
-                className={`${styles.iconContent} ${styles.closeIconContent}`}
-                key="closeLeftControls"
-                transition={contentTransition}
-              >
-                <SvgIcon
-                  className={styles.plusIcon}
-                  style={primaryIconStyle}
-                  svg={plusIcon}
-                />
-              </motion.span>
-            ))
-            .with({ kind: "closeRightControls" }, () => (
-              <motion.span
-                {...contentAnimation}
-                className={`${styles.iconContent} ${styles.closeIconContent}`}
-                key="closeRightControls"
-                transition={contentTransition}
-              >
-                <SvgIcon
-                  className={styles.plusIcon}
-                  style={primaryIconStyle}
-                  svg={plusIcon}
-                />
-              </motion.span>
-            ))
-            .with({ kind: "clearSearch" }, ({ label }) => (
-              <motion.span
-                {...contentAnimation}
-                className={styles.textContent}
-                key="clearSearch"
-                transition={contentTransition}
-              >
-                {label}
-              </motion.span>
-            ))
             .with({ kind: "save" }, ({ label }) => (
               <motion.span
-                {...contentAnimation}
+                {...textContentAnimation}
                 className={styles.textContent}
                 key="save"
                 transition={contentTransition}
@@ -252,7 +153,7 @@ export function PrimaryQuoteButton({
             ))
             .exhaustive()}
         </AnimatePresence>
-      </span>
+      </motion.span>
     </motion.button>
   );
 }

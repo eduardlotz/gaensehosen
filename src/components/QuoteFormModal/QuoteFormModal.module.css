@@ -46,6 +46,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 0 1rem;
 }
 
 .quoteField {
@@ -147,37 +148,74 @@
 }
 
 .sourceField {
+  --source-clip-offset: 0.12em;
   position: relative;
   z-index: 0;
   isolation: isolate;
   display: block;
   width: fit-content;
   max-width: 100%;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -2%;
+  line-height: 1.15;
 }
 
-.sourceInput {
+.sourceInputWrap {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
   display: block;
   width: fit-content;
   max-width: 100%;
-  border: 0;
-  outline: 0;
-  padding: 0;
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -2%;
-  text-overflow: ellipsis;
-  field-sizing: content;
+  min-height: 1.15em;
 }
 
-.sourceInput::placeholder {
+.sourceMirror {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 1.15em;
+  margin-inline: calc(0px - var(--source-clip-offset));
+  padding-inline: var(--source-clip-offset);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.sourceField:has(input:placeholder-shown) .sourceMirror {
   color: var(--color-text-subtle);
 }
 
-.sourceInput:focus {
+.sourceField:focus-within .sourceMirror {
   color: var(--color-text);
+}
+
+.sourceInput {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: calc(0px - var(--source-clip-offset));
+  box-sizing: border-box;
+  display: block;
+  width: calc(
+    100% + var(--source-clip-offset) + var(--source-clip-offset)
+  );
+  height: 100%;
+  min-height: 1.15em;
+  border: 0;
+  outline: 0;
+  padding: 0 var(--source-clip-offset);
+  background: transparent;
+  color: transparent;
+  caret-color: var(--color-brand);
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.sourceInput::placeholder {
+  color: transparent;
 }
 
 .actionGroup {
@@ -250,11 +288,15 @@
 
 @media (max-width: 920px) {
   .backdrop {
-    padding: 40vh 24px 60px;
+    padding: 24vh 24px 60px;
   }
 }
 
 @media (max-width: 720px) {
+  .backdrop {
+    padding: 18vh 18px 60px;
+  }
+
   .editor {
     width: min(100%, calc(100vw - 36px));
   }

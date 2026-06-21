@@ -43,7 +43,7 @@
 
 .welcome {
   overflow: hidden;
-  padding: 20px 24px 64px;
+  padding: 20px 24px 96px;
 }
 
 .welcome::before {
@@ -74,7 +74,7 @@
 
 @media (max-width: 760px) {
   .welcome {
-    padding: 28px 24px 72px;
+    padding: 28px 24px 112px;
   }
 }
 

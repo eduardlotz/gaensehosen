@@ -4,8 +4,6 @@ import type {
   ChangeEvent,
   CSSProperties,
   FocusEvent as ReactFocusEvent,
-  MouseEvent as ReactMouseEvent,
-  PointerEvent as ReactPointerEvent,
 } from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import backArrowIcon from "../icons/back-arrow.svg?raw";
@@ -26,12 +24,14 @@ import {
   type MobileControlOptionsOpen,
 } from "../components/Controls";
 import { ExportModal } from "../components/ExportModal";
+import { FloatingQuoteUtilityButton } from "../components/FloatingQuoteUtilityButton";
 import { PrimaryQuoteButton } from "../components/PrimaryQuoteButton";
 import { WelcomeSlider, type WelcomeSlide } from "../components/WelcomeSlider";
 import { Button, Page, Section, SvgIcon, Text } from "../components/ui";
 import { QuoteFormModal } from "../components/QuoteFormModal";
 import { t } from "../i18n/messages";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 import { useCollectionStore } from "../store/collectionStore";
 import type {
   FontSize,
@@ -131,23 +131,6 @@ export function AppPage() {
     // Placeholder for the future help dialog.
   }
 
-  function closeMobileOptionsFromOutside(
-    event: ReactMouseEvent<HTMLElement> | ReactPointerEvent<HTMLElement>,
-  ) {
-    if (mobileOptionsOpen === null) {
-      return;
-    }
-
-    if (
-      event.target instanceof Element &&
-      event.target.closest("[data-mobile-floating-controls]")
-    ) {
-      return;
-    }
-
-    setMobileOptionsOpen(null);
-  }
-
   async function handleImportFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -172,6 +155,12 @@ export function AppPage() {
       setMobileOptionsOpen(null);
     }
   }, [formOpen, hasQuotes]);
+
+  useOutsideClick({
+    enabled: mobileOptionsOpen !== null,
+    ignoreSelector: "[data-mobile-floating-controls]",
+    onOutsideClick: () => setMobileOptionsOpen(null),
+  });
 
   useEffect(() => {
     if (!formOpen) {
@@ -233,8 +222,6 @@ export function AppPage() {
         variant={hasQuotes ? "app" : "welcome"}
         data-form-mode={formMode}
         data-form-open={formOpen}
-        onClickCapture={closeMobileOptionsFromOutside}
-        onPointerDownCapture={closeMobileOptionsFromOutside}
       >
         {hasQuotes ? (
           <CollectionApp
@@ -281,14 +268,11 @@ export function AppPage() {
 
         <AnimatePresence initial={false}>
           {!formOpen && hasQuotes && mobileOptionsOpen ? (
-            <PrimaryQuoteButton
+            <FloatingQuoteUtilityButton
               data-mobile-floating-controls=""
-              key={`close-${mobileOptionsOpen}-controls-button`}
+              key="floating-quote-utility-button"
               state={{
-                kind:
-                  mobileOptionsOpen === "grid"
-                    ? "closeLeftControls"
-                    : "closeRightControls",
+                kind: "closeControls",
                 label: t(
                   locale,
                   mobileOptionsOpen === "grid"
@@ -296,17 +280,16 @@ export function AppPage() {
                     : "closeFontSizeControls",
                 ),
                 onClick: () => setMobileOptionsOpen(null),
-                position: "fixed",
+                side: mobileOptionsOpen === "grid" ? "right" : "left",
               }}
             />
           ) : !formOpen && showClearSearchButton ? (
-            <PrimaryQuoteButton
-              key="clear-search-button"
+            <FloatingQuoteUtilityButton
+              key="floating-quote-utility-button"
               state={{
                 kind: "clearSearch",
                 label: t(locale, "clearSearch"),
                 onClick: () => setQuery(""),
-                position: "fixed",
               }}
             />
           ) : !formOpen ? (

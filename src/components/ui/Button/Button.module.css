@@ -86,6 +86,20 @@
   --button-fg: var(--color-text);
 }
 
+:global(.themeDark) .default {
+  --button-bg: var(--color-surface);
+  --button-bg-hover: color-mix(
+    in srgb,
+    var(--color-surface) 88%,
+    var(--color-text) 12%
+  );
+  --button-border: rgb(255 255 255 / 0.08);
+  --button-border-hover: rgb(255 255 255 / 0.16);
+  --button-outline-shadow-color: rgb(255 255 255 / 0.08);
+  --button-outline-shadow-color-hover: rgb(255 255 255 / 0.18);
+  --button-fg: var(--color-text);
+}
+
 .flat,
 .icon {
   --button-bg: var(--color-surface-soft);
@@ -101,6 +115,19 @@
   --button-shadow-hover: none;
 }
 
+:global(.themeDark) .flat,
+:global(.themeDark) .icon {
+  --button-bg: var(--color-surface-soft);
+  --button-bg-hover: color-mix(
+    in srgb,
+    var(--color-surface-soft) 84%,
+    var(--color-text) 16%
+  );
+  --button-border: transparent;
+  --button-border-hover: transparent;
+  --button-fg: var(--color-text);
+}
+
 .highlight {
   --button-bg: linear-gradient(180deg, #29304f 0%, #151b37 100%);
   --button-bg-hover: linear-gradient(180deg, #30385c 0%, #191f3d 100%);
@@ -114,6 +141,25 @@
     inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 0 0 1px rgb(0 0 0 / 0.28),
     0 3px 7px 1.5px rgb(0 0 0 / 0.14), 0 14px 32px rgb(13 18 44 / 0.32);
   text-shadow: 0 -0.5px 0.5px rgb(0 0 0 / 0.35);
+}
+
+:global(.themeDark) .highlight {
+  --button-bg: linear-gradient(180deg, #ffffff 0%, #ececea 100%);
+  --button-bg-hover: linear-gradient(180deg, #ffffff 0%, #f5f4f1 100%);
+  --button-border: rgb(255 255 255 / 0.56);
+  --button-border-hover: rgb(255 255 255 / 0.72);
+  --button-fg: #10100f;
+  --button-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 0 0 1px rgb(255 255 255 / 0.62),
+    0 2px 5px 1.5px rgb(0 0 0 / 0.18),
+    0 12px 30px rgb(0 0 0 / 0.26);
+  --button-shadow-hover:
+    inset 0 1px 0 rgb(255 255 255 / 0.96),
+    inset 0 0 0 1px rgb(255 255 255 / 0.72),
+    0 3px 7px 1.5px rgb(0 0 0 / 0.2),
+    0 14px 32px rgb(0 0 0 / 0.3);
+  text-shadow: none;
 }
 
 .brand {
@@ -137,15 +183,17 @@
   --button-bg-hover: color-mix(in srgb, var(--color-surface) 98%, #ff1f1f 2%);
   --button-border: rgb(255 31 31 / 0.14);
   --button-border-hover: rgb(255 31 31 / 0.24);
-  --button-outline-shadow-color: rgb(255 255 255 / 0.55);
-  --button-outline-shadow-color-hover: rgb(255 31 31 / 0.18);
+  --button-outline-shadow-color: rgb(255 31 31 / 0.12);
+  --button-outline-shadow-color-hover: rgb(255 31 31 / 0.24);
   --button-fg: #ff1f1f;
   --button-shadow:
-    inset 0 0 0 1px var(--button-outline-shadow-color),
-    0 8px 24px rgb(255 31 31 / 0.08);
+    0 0 0 1.5px var(--button-outline-shadow-color),
+    0 0.5px 1px rgb(255 31 31 / 0.05),
+    0 1px 4px rgb(255 31 31 / 0.06);
   --button-shadow-hover:
     inset 0 0 0 1px var(--button-outline-shadow-color-hover),
-    0 10px 28px rgb(255 31 31 / 0.11);
+    0 1px 2px rgb(255 31 31 / 0.07),
+    0 2px 7px rgb(255 31 31 / 0.08);
 }
 
 .icon {
