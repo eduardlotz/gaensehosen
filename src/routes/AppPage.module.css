@@ -48,7 +48,7 @@
   align-items: center;
   justify-self: start;
   gap: 7px;
-  width: min(508px, 100%);
+  width: min(380px, 100%);
   min-width: 0;
   height: 40px;
   /* border: 1.5px solid rgb(0 0 0 / 0.08); */
@@ -807,7 +807,7 @@
   gap: 64px;
   width: min(1040px, 100%);
   margin: 0 auto;
-  padding: var(--focus-padding-start, 15vh) 0 var(--focus-padding-end, 15vh);
+  padding: var(--focus-padding-start, 120px) 0 var(--focus-padding-end, 15vh);
 }
 
 .focusQuoteCard {
@@ -864,36 +864,45 @@
   }
 
   .searchBox {
-    width: min(420px, 100%);
+    width: min(380px, 100%);
   }
 }
 
 @media (max-width: 1080px) {
   .navbar {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "brand controls"
-      "search search";
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
   }
 
   .navBrand {
-    grid-area: brand;
-    position: fixed;
-    top: 24px;
-    left: 50vw;
-    justify-self: auto;
-    transform: translateX(-50%);
+    grid-column: 2;
+    position: static;
+    justify-self: center;
+    transform: none;
   }
 
   .navControls {
-    grid-area: controls;
+    grid-column: 3;
     justify-self: end;
   }
 
   .searchBox {
-    grid-area: search;
+    grid-column: 1;
+    justify-self: start;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .searchBox .searchInput {
+    width: 7ch;
+  }
+
+  .searchBox:focus-within {
     justify-self: stretch;
+    width: min(380px, 100%);
+  }
+
+  .searchBox:focus-within .searchInput {
     width: 100%;
   }
 

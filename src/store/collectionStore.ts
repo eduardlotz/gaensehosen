@@ -1,79 +1,86 @@
-import { create } from 'zustand'
-import type { StateStorage } from 'zustand/middleware'
-import { createJSONStorage, persist } from 'zustand/middleware'
-import { indexedDbStorage } from './idbStorage'
-import type { ImportedQuote } from '../utils/quoteCsv'
+import { create } from "zustand";
+import type { StateStorage } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { indexedDbStorage } from "./idbStorage";
+import type { ImportedQuote } from "../utils/quoteCsv";
 
-export type Locale = 'de' | 'en'
-export type ThemeName = 'light' | 'dark'
-export type GridMode = 'masonry' | 'grid' | 'list' | 'focus'
-export type FontSize = 16 | 24 | 32 | 40
+export type Locale = "de" | "en";
+export type ThemeName = "light" | "dark";
+export type GridMode = "masonry" | "grid" | "list" | "focus";
+export type FontSize = 16 | 24 | 32 | 40;
 
 export type Quote = {
-  id: string
-  text: string
-  source: string
-  createdAt: string
-}
+  id: string;
+  text: string;
+  source: string;
+  createdAt: string;
+};
 
 type NewQuote = {
-  text: string
-  source: string
-}
+  text: string;
+  source: string;
+};
 
 type CollectionState = {
-  quotes: Quote[]
-  locale: Locale
-  theme: ThemeName
-  fontSize: FontSize
-  gridMode: GridMode
-  addQuote: (quote: NewQuote) => void
-  importQuotes: (quotes: ImportedQuote[]) => void
-  updateQuote: (id: string, quote: NewQuote) => void
-  removeQuote: (id: string) => void
-  resetApp: () => void
-  setLocale: (locale: Locale) => void
-  setTheme: (theme: ThemeName) => void
-  setFontSize: (fontSize: FontSize) => void
-  setGridMode: (gridMode: GridMode) => void
-}
+  quotes: Quote[];
+  hasStartedCollection: boolean;
+  locale: Locale;
+  theme: ThemeName;
+  fontSize: FontSize;
+  gridMode: GridMode;
+  addQuote: (quote: NewQuote) => void;
+  importQuotes: (quotes: ImportedQuote[]) => void;
+  updateQuote: (id: string, quote: NewQuote) => void;
+  removeQuote: (id: string) => void;
+  resetApp: () => void;
+  setLocale: (locale: Locale) => void;
+  setTheme: (theme: ThemeName) => void;
+  setFontSize: (fontSize: FontSize) => void;
+  setGridMode: (gridMode: GridMode) => void;
+};
 
 function createId() {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID()
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
   }
 
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function normalizeQuoteText(text: string) {
-  return text.replace(/\r\n?/g, '\n').trim()
+  return text.replace(/\r\n?/g, "\n").trim();
 }
 
 const collectionStorage: StateStorage = {
   getItem: async (name) => {
-    const value = await indexedDbStorage.getItem(name)
+    const value = await indexedDbStorage.getItem(name);
 
     if (value) {
-      return value
+      return value;
     }
 
-    return indexedDbStorage.getItem('gaensehosen-archive')
+    return indexedDbStorage.getItem("gaensehosen-archive");
   },
   setItem: indexedDbStorage.setItem,
   removeItem: indexedDbStorage.removeItem,
-}
+};
 
 const defaultCollectionState = {
   quotes: [],
-  locale: 'de',
-  theme: 'light',
+  hasStartedCollection: false,
+  locale: "de",
+  theme: "light",
   fontSize: 16,
-  gridMode: 'masonry',
+  gridMode: "masonry",
 } satisfies Pick<
   CollectionState,
-  'quotes' | 'locale' | 'theme' | 'fontSize' | 'gridMode'
->
+  | "quotes"
+  | "hasStartedCollection"
+  | "locale"
+  | "theme"
+  | "fontSize"
+  | "gridMode"
+>;
 
 export const useCollectionStore = create<CollectionState>()(
   persist(
@@ -81,6 +88,7 @@ export const useCollectionStore = create<CollectionState>()(
       ...defaultCollectionState,
       addQuote: (quote) => {
         set((state) => ({
+          hasStartedCollection: true,
           quotes: [
             {
               id: createId(),
@@ -90,10 +98,11 @@ export const useCollectionStore = create<CollectionState>()(
             },
             ...state.quotes,
           ],
-        }))
+        }));
       },
       importQuotes: (quotes) => {
         set((state) => ({
+          hasStartedCollection: true,
           quotes: [
             ...quotes.map((quote) => ({
               id: createId(),
@@ -103,7 +112,7 @@ export const useCollectionStore = create<CollectionState>()(
             })),
             ...state.quotes,
           ],
-        }))
+        }));
       },
       updateQuote: (id, quote) => {
         set((state) => ({
@@ -116,12 +125,12 @@ export const useCollectionStore = create<CollectionState>()(
                 }
               : entry,
           ),
-        }))
+        }));
       },
       removeQuote: (id) => {
         set((state) => ({
           quotes: state.quotes.filter((quote) => quote.id !== id),
-        }))
+        }));
       },
       resetApp: () => set(defaultCollectionState),
       setLocale: (locale) => set({ locale }),
@@ -130,9 +139,22 @@ export const useCollectionStore = create<CollectionState>()(
       setGridMode: (gridMode) => set({ gridMode }),
     }),
     {
-      name: 'gaensehosen-collection',
+      name: "gaensehosen-collection",
       storage: createJSONStorage(() => collectionStorage),
-      version: 1,
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = persistedState as Partial<CollectionState>;
+
+        if (version < 2) {
+          return {
+            ...state,
+            hasStartedCollection:
+              Array.isArray(state.quotes) && state.quotes.length > 0,
+          } as CollectionState;
+        }
+
+        return state as CollectionState;
+      },
     },
   ),
-)
+);

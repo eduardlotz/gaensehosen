@@ -7,6 +7,7 @@ import type {
   ReactNode,
 } from "react";
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import plusIcon from "../../../icons/plus.svg?raw";
 import { IconButton } from "../Button";
 import { classNames } from "../classNames";
@@ -169,7 +170,7 @@ export function FullScreenDialog({
     }
   }
 
-  return (
+  return createPortal(
     <motion.div
       animate={{ opacity: 1 }}
       className={classNames(styles.backdrop, className)}
@@ -195,7 +196,8 @@ export function FullScreenDialog({
       >
         {children}
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 

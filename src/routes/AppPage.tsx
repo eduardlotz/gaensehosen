@@ -4,6 +4,7 @@ import type {
   ChangeEvent,
   CSSProperties,
   FocusEvent as ReactFocusEvent,
+  ReactNode,
 } from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import backArrowIcon from "../icons/back-arrow.svg?raw";
@@ -23,7 +24,6 @@ import {
   Controls,
   type MobileControlOptionsOpen,
 } from "../components/Controls";
-import { ExportModal } from "../components/ExportModal";
 import { FloatingQuoteUtilityButton } from "../components/FloatingQuoteUtilityButton";
 import { HelpModal } from "../components/HelpModal";
 import { PrimaryQuoteButton } from "../components/PrimaryQuoteButton";
@@ -49,17 +49,31 @@ import type {
   Quote,
   ThemeName,
 } from "../store/collectionStore";
-import { parseQuotesCsv } from "../utils/quoteCsv";
+import { parseQuotesCsv, serializeQuotesCsv } from "../utils/quoteCsv";
 import styles from "./AppPage.module.css";
 
 const quoteFormId = "quote-form";
 type FormMode = "closed" | "add" | "edit";
+
+function downloadQuotesCsv(quotes: Quote[]) {
+  const blob = new Blob([serializeQuotesCsv(quotes)], {
+    type: "text/csv;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = "gaensehosen-quotes.csv";
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 
 export function AppPage() {
   const {
     addQuote,
     fontSize,
     gridMode,
+    hasStartedCollection,
     importQuotes,
     locale,
     removeQuote,
@@ -74,7 +88,6 @@ export function AppPage() {
   } = useCollectionStore();
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [mobileOptionsOpen, setMobileOptionsOpen] =
@@ -103,7 +116,8 @@ export function AppPage() {
   }, [query, quotes]);
 
   const hasQuotes = quotes.length > 0;
-  const modalOpen = formOpen || exportOpen || helpOpen || resetConfirmOpen;
+  const showWelcome = hasStartedCollection === false && !hasQuotes;
+  const modalOpen = formOpen || helpOpen || resetConfirmOpen;
   const hasActiveSearch = query.trim().length > 0;
   const hasNoResults = hasQuotes && filteredQuotes.length === 0;
   const showClearSearchButton = hasNoResults && hasActiveSearch;
@@ -133,7 +147,6 @@ export function AppPage() {
   function confirmResetApp() {
     resetApp();
     setQuery("");
-    setExportOpen(false);
     setHelpOpen(false);
     setResetConfirmOpen(false);
     closeForm();
@@ -204,11 +217,11 @@ export function AppPage() {
   return (
     <LayoutGroup id="quote-action-layout">
       <Page
-        variant={hasQuotes ? "app" : "welcome"}
+        variant={showWelcome ? "welcome" : "app"}
         data-form-mode={formMode}
         data-form-open={formOpen}
       >
-        {hasQuotes ? (
+        {!showWelcome ? (
           <CollectionApp
             filteredQuotes={filteredQuotes}
             fontSize={fontSize}
@@ -221,7 +234,7 @@ export function AppPage() {
             onFontSizeChange={setFontSize}
             onGridModeChange={setGridMode}
             onMobileOptionsOpenChange={setMobileOptionsOpen}
-            onExportClick={() => setExportOpen(true)}
+            onExportClick={() => downloadQuotesCsv(quotes)}
             onHelpClick={openHelpDialog}
             onImportClick={() => importInputRef.current?.click()}
             onLocaleChange={setLocale}
@@ -252,7 +265,7 @@ export function AppPage() {
         />
 
         <AnimatePresence initial={false}>
-          {!formOpen && hasQuotes && mobileOptionsOpen ? (
+          {!formOpen && !showWelcome && mobileOptionsOpen ? (
             <FloatingQuoteUtilityButton
               data-mobile-floating-controls=""
               key="floating-quote-utility-button"
@@ -318,18 +331,6 @@ export function AppPage() {
         </AnimatePresence>
 
         <AnimatePresence initial={false}>
-          {exportOpen ? (
-            <ExportModal
-              key="export-dialog"
-              locale={locale}
-              onClose={() => setExportOpen(false)}
-              open={exportOpen}
-              quotes={quotes}
-            />
-          ) : null}
-        </AnimatePresence>
-
-        <AnimatePresence initial={false}>
           {helpOpen ? (
             <HelpModal
               key="help-dialog"
@@ -390,6 +391,35 @@ type CollectionAppProps = {
   onThemeChange: (theme: ThemeName) => void;
   setQuery: (query: string) => void;
 };
+
+type AppHeaderProps = {
+  controls?: ReactNode;
+  locale: Locale;
+  mobileSearchActive?: boolean;
+  search?: ReactNode;
+};
+
+function AppHeader({
+  controls,
+  locale,
+  mobileSearchActive = false,
+  search,
+}: AppHeaderProps) {
+  return (
+    <header
+      className={styles.navbar}
+      data-mobile-search-open={mobileSearchActive ? "true" : undefined}
+    >
+      {search}
+
+      <div className={styles.navBrand}>
+        <Brand locale={locale} />
+      </div>
+
+      {controls}
+    </header>
+  );
+}
 
 function CollectionApp({
   filteredQuotes,
@@ -463,128 +493,126 @@ function CollectionApp({
 
   return (
     <>
-      <header
-        className={styles.navbar}
-        data-mobile-search-open={mobileSearchActive ? "true" : undefined}
-      >
-        <div
-          className={styles.searchBox}
-          data-focus-ring="within"
-          onBlur={handleSearchBlur}
-          onClick={() => searchInputRef.current?.focus()}
-        >
-          <SvgIcon className={styles.searchIcon} svg={searchIcon} />
-          <input
-            aria-label={t(locale, "search")}
-            className={styles.searchInput}
-            onChange={handleSearchChange}
-            onFocus={openMobileSearch}
-            placeholder={t(locale, "search")}
-            ref={searchInputRef}
-            type="search"
-            value={query}
-          />
-          {query ? (
-            <Button
-              aria-label={t(locale, "clearSearch")}
-              className={styles.searchClearButton}
-              icon={
-                <SvgIcon className={styles.searchClearIcon} svg={plusIcon} />
-              }
-              onClick={(event) => {
-                event.stopPropagation();
-                handleSearchClear();
-              }}
-              onMouseDown={(event) => event.preventDefault()}
-              size="small"
-              title={t(locale, "clearSearch")}
-              type="button"
-              variant="flat"
+      <AppHeader
+        locale={locale}
+        mobileSearchActive={mobileSearchActive}
+        search={
+          <div
+            className={styles.searchBox}
+            data-focus-ring="within"
+            onBlur={handleSearchBlur}
+            onClick={() => searchInputRef.current?.focus()}
+          >
+            <SvgIcon className={styles.searchIcon} svg={searchIcon} />
+            <input
+              aria-label={t(locale, "search")}
+              className={styles.searchInput}
+              onChange={handleSearchChange}
+              onFocus={openMobileSearch}
+              placeholder={t(locale, "search")}
+              ref={searchInputRef}
+              type="search"
+              value={query}
             />
-          ) : null}
-        </div>
-
-        <div className={styles.navBrand}>
-          <Brand locale={locale} />
-        </div>
-
-        <div className={styles.navControls}>
-          <Menu.Root modal={false}>
-            <Menu.Trigger
-              className={styles.optionsButton}
-              title={t(locale, "options")}
-              type="button"
-            >
-              <span>{t(locale, "options")}</span>
-              <SvgIcon className={styles.buttonIcon} svg={threeDotsIcon} />
-            </Menu.Trigger>
-            <Menu.Portal>
-              <Menu.Positioner
-                align="end"
-                className={styles.actionMenuPositioner}
-                sideOffset={8}
+            {query ? (
+              <Button
+                aria-label={t(locale, "clearSearch")}
+                className={styles.searchClearButton}
+                icon={
+                  <SvgIcon className={styles.searchClearIcon} svg={plusIcon} />
+                }
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleSearchClear();
+                }}
+                onMouseDown={(event) => event.preventDefault()}
+                size="small"
+                title={t(locale, "clearSearch")}
+                type="button"
+                variant="flat"
+              />
+            ) : null}
+          </div>
+        }
+        controls={
+          <div className={styles.navControls}>
+            <Menu.Root modal={false}>
+              <Menu.Trigger
+                className={styles.optionsButton}
+                title={t(locale, "options")}
+                type="button"
               >
-                <Menu.Popup className={styles.actionMenu}>
-                  <Menu.Item
-                    className={styles.actionMenuItem}
-                    onClick={onHelpClick}
-                  >
-                    <SvgIcon
-                      className={styles.buttonIcon}
-                      svg={questionCircleIcon}
-                    />
-                    <span>{t(locale, "help")}</span>
-                  </Menu.Item>
-                  <Menu.Item
-                    className={styles.actionMenuItem}
-                    onClick={() =>
-                      onLocaleChange(locale === "en" ? "de" : "en")
-                    }
-                  >
-                    <SvgIcon className={styles.buttonIcon} svg={globeIcon} />
-                    <span>{t(locale, "language")}</span>
-                  </Menu.Item>
-                  <Menu.Item
-                    className={styles.actionMenuItem}
-                    onClick={() =>
-                      onThemeChange(theme === "light" ? "dark" : "light")
-                    }
-                  >
-                    <SvgIcon
-                      className={styles.buttonIcon}
-                      svg={theme === "light" ? moonIcon : sunIcon}
-                    />
-                    <span>{t(locale, "theme")}</span>
-                  </Menu.Item>
+                <span>{t(locale, "options")}</span>
+                <SvgIcon className={styles.buttonIcon} svg={threeDotsIcon} />
+              </Menu.Trigger>
+              <Menu.Portal>
+                <Menu.Positioner
+                  align="end"
+                  className={styles.actionMenuPositioner}
+                  sideOffset={8}
+                >
+                  <Menu.Popup className={styles.actionMenu}>
+                    <Menu.Item
+                      className={styles.actionMenuItem}
+                      onClick={onHelpClick}
+                    >
+                      <SvgIcon
+                        className={styles.buttonIcon}
+                        svg={questionCircleIcon}
+                      />
+                      <span>{t(locale, "help")}</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      className={styles.actionMenuItem}
+                      onClick={() =>
+                        onLocaleChange(locale === "en" ? "de" : "en")
+                      }
+                    >
+                      <SvgIcon className={styles.buttonIcon} svg={globeIcon} />
+                      <span>{t(locale, "language")}</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      className={styles.actionMenuItem}
+                      onClick={() =>
+                        onThemeChange(theme === "light" ? "dark" : "light")
+                      }
+                    >
+                      <SvgIcon
+                        className={styles.buttonIcon}
+                        svg={theme === "light" ? moonIcon : sunIcon}
+                      />
+                      <span>{t(locale, "theme")}</span>
+                    </Menu.Item>
 
-                  <Menu.Item
-                    className={styles.actionMenuItem}
-                    onClick={onExportClick}
-                  >
-                    <SvgIcon className={styles.buttonIcon} svg={exportIcon} />
-                    <span>{t(locale, "export")}</span>
-                  </Menu.Item>
-                  <Menu.Item
-                    className={styles.actionMenuItem}
-                    onClick={onImportClick}
-                  >
-                    <SvgIcon className={styles.buttonIcon} svg={fileIcon} />
-                    <span>{t(locale, "importQuotes")}</span>
-                  </Menu.Item>
+                    <Menu.Item
+                      className={styles.actionMenuItem}
+                      onClick={onExportClick}
+                    >
+                      <SvgIcon className={styles.buttonIcon} svg={exportIcon} />
+                      <span>{t(locale, "exportCsv")}</span>
+                    </Menu.Item>
+                    <Menu.Item
+                      className={styles.actionMenuItem}
+                      onClick={onImportClick}
+                    >
+                      <SvgIcon className={styles.buttonIcon} svg={fileIcon} />
+                      <span>{t(locale, "importCsv")}</span>
+                    </Menu.Item>
 
-                  <Menu.Item
-                    className={`${styles.actionMenuItem} ${styles.actionMenuItemDanger}`}
-                    onClick={onResetClick}
-                  >
-                    <SvgIcon className={styles.buttonIcon} svg={trashIcon} />
-                    <span>{t(locale, "resetApp")}</span>
-                  </Menu.Item>
-                </Menu.Popup>
-              </Menu.Positioner>
-            </Menu.Portal>
-          </Menu.Root>
-        </div>
-      </header>
+                    <Menu.Item
+                      className={`${styles.actionMenuItem} ${styles.actionMenuItemDanger}`}
+                      onClick={onResetClick}
+                    >
+                      <SvgIcon className={styles.buttonIcon} svg={trashIcon} />
+                      <span>{t(locale, "resetApp")}</span>
+                    </Menu.Item>
+                  </Menu.Popup>
+                </Menu.Positioner>
+              </Menu.Portal>
+            </Menu.Root>
+          </div>
+        }
+      />
 
       <Controls
         fontSize={fontSize}
@@ -846,9 +874,7 @@ function WelcomeScreen({
 }: WelcomeScreenProps) {
   return (
     <>
-      <header className={styles.emptyHeader}>
-        <Brand locale={locale} />
-      </header>
+      <AppHeader locale={locale} />
 
       <Section
         className={styles.emptyContent}
@@ -918,7 +944,7 @@ function WelcomeActions({
           type="button"
           variant="flat"
         >
-          {t(locale, "importQuotes")}
+          {t(locale, "importCsv")}
         </Button>
         <Button
           icon={
@@ -1016,7 +1042,7 @@ function FocusQuoteList({
 
       const rootHeight = root.clientHeight;
       const startPadding = firstItem
-        ? Math.max(0, (rootHeight - firstItem.offsetHeight) / 2)
+        ? Math.max(0, (rootHeight - firstItem.offsetHeight) / 5)
         : 0;
       const endPadding = lastItem
         ? Math.max(0, (rootHeight - lastItem.offsetHeight) / 2)

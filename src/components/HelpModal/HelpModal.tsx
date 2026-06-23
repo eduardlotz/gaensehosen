@@ -1,4 +1,3 @@
-import { Brand } from "../Brand";
 import { FullScreenDialog, ModalCloseButton, Text } from "../ui";
 import { t } from "../../i18n/messages";
 import type { Locale } from "../../store/collectionStore";
@@ -29,17 +28,17 @@ const helpItems: Record<Locale, HelpItem[]> = {
     },
     {
       question: "Wie viel kostet es?",
-      answer: "Nichts. Kostenlos für dich :)",
+      answer: "Gratis. 🙂",
     },
     {
       question: "Wo werden meine Daten gespeichert?",
       answer:
-        "In deinem Browser, also nur auf dem Gerät, auf dem du die Seite benutzt.\nKeine Accounts, keine Uploads, keine Datenbank.",
+        "In deinem Browser, also nur auf dem Gerät, auf dem du die Seite benutzt.\nEs wird nichts im Internet hochgeladen, alles funktioniert quasi offline.",
     },
     {
       question: "Wieso heißt es Gänsehosen?",
       answer:
-        "Eine Anspielung auf das deutsche Meme. Und Zitate haben eh schon Gänsefüßchen, warum also keine Hosen?",
+        "Eine Anspielung an das deutsche Meme, in Kombination damit, dass Zitate sowieso schon Gänsefüßchen haben.",
     },
   ],
   en: [
@@ -77,20 +76,11 @@ export function HelpModal({ locale, open, onClose }: HelpModalProps) {
   return (
     <FullScreenDialog
       aria-labelledby="help-dialog-title"
+      className={styles.backdrop}
       contentClassName={styles.modal}
       onClose={onClose}
     >
-      <ModalCloseButton
-        aria-label={t(locale, "cancel")}
-        onClick={onClose}
-        title={t(locale, "cancel")}
-      />
-
-      <div className={styles.brand}>
-        <Brand locale={locale} />
-      </div>
-
-      <div className={styles.content}>
+      <div className={styles.stickyHeader}>
         <Text
           as="h1"
           className={styles.title}
@@ -102,6 +92,15 @@ export function HelpModal({ locale, open, onClose }: HelpModalProps) {
           <span className={styles.quoteMark}>“</span>
         </Text>
 
+        <ModalCloseButton
+          aria-label={t(locale, "cancel")}
+          className={styles.closeButton}
+          onClick={onClose}
+          title={t(locale, "cancel")}
+        />
+      </div>
+
+      <div className={styles.scrollContent}>
         <div className={styles.items}>
           {helpItems[locale].map((item) => (
             <section className={styles.item} key={item.question}>
