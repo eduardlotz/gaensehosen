@@ -3,6 +3,7 @@ import type { Locale } from "../store/collectionStore";
 const messages = {
   de: {
     brand: "Gänsehosen",
+    toggleLogo: "Logo-Variante wechseln",
     search: "Suchen",
     addQuote: "Zitat hinzufügen",
     editQuote: "Zitat bearbeiten",
@@ -49,6 +50,7 @@ const messages = {
   },
   en: {
     brand: "Gänsehosen",
+    toggleLogo: "Switch logo variant",
     search: "Search",
     addQuote: "Add quote",
     editQuote: "Edit quote",

@@ -19,16 +19,16 @@ const helpItems: Record<Locale, HelpItem[]> = {
     {
       question: "Was ist das hier?",
       answer:
-        "Eine kleine Notiz-App im Browser, nur für Zitate und Quellen.\nZum Sammeln, Suchen und Wiederfinden.",
+        "Quasi eine Notiz-App im Internet, aber nur für Texte und deren Herkunft.\nEine Website zum Sammeln von Zitaten.",
     },
     {
       question: "Wofür eine Website, ich hab doch meine Notizapp?",
       answer:
-        "Damit Zitate nicht zwischen Einkaufslisten, Screenshots und anderen Notizen verschwinden.",
+        "Ich wollte eine schlichte Platform zum Sammeln von Zitaten haben.",
     },
     {
-      question: "Wie viel kostet es?",
-      answer: "Gratis. 🙂",
+      question: "Wie viel kostet?",
+      answer: "Kostenlos. 🙂",
     },
     {
       question: "Wo werden meine Daten gespeichert?",
@@ -38,7 +38,7 @@ const helpItems: Record<Locale, HelpItem[]> = {
     {
       question: "Wieso heißt es Gänsehosen?",
       answer:
-        "Eine Anspielung an das deutsche Meme, in Kombination damit, dass Zitate sowieso schon Gänsefüßchen haben.",
+        "Eine Anspielung an das deutsche Meme, in Kombination damit, dass Zitate sowieso schon Gänsefüßchen haben. 🦆",
     },
   ],
   en: [

@@ -8,6 +8,7 @@ export type Locale = "de" | "en";
 export type ThemeName = "light" | "dark";
 export type GridMode = "masonry" | "grid" | "list" | "focus";
 export type FontSize = 16 | 24 | 32 | 40;
+export type LogoVariant = "wordmark" | "alternate";
 
 export type Quote = {
   id: string;
@@ -28,6 +29,7 @@ type CollectionState = {
   theme: ThemeName;
   fontSize: FontSize;
   gridMode: GridMode;
+  logoVariant: LogoVariant;
   addQuote: (quote: NewQuote) => void;
   importQuotes: (quotes: ImportedQuote[]) => void;
   updateQuote: (id: string, quote: NewQuote) => void;
@@ -37,6 +39,7 @@ type CollectionState = {
   setTheme: (theme: ThemeName) => void;
   setFontSize: (fontSize: FontSize) => void;
   setGridMode: (gridMode: GridMode) => void;
+  setLogoVariant: (logoVariant: LogoVariant) => void;
 };
 
 function createId() {
@@ -72,6 +75,7 @@ const defaultCollectionState = {
   theme: "light",
   fontSize: 16,
   gridMode: "masonry",
+  logoVariant: "wordmark",
 } satisfies Pick<
   CollectionState,
   | "quotes"
@@ -80,6 +84,7 @@ const defaultCollectionState = {
   | "theme"
   | "fontSize"
   | "gridMode"
+  | "logoVariant"
 >;
 
 export const useCollectionStore = create<CollectionState>()(
@@ -137,20 +142,26 @@ export const useCollectionStore = create<CollectionState>()(
       setTheme: (theme) => set({ theme }),
       setFontSize: (fontSize) => set({ fontSize }),
       setGridMode: (gridMode) => set({ gridMode }),
+      setLogoVariant: (logoVariant) => set({ logoVariant }),
     }),
     {
       name: "gaensehosen-collection",
       storage: createJSONStorage(() => collectionStorage),
-      version: 2,
+      version: 3,
       migrate: (persistedState, version) => {
         const state = persistedState as Partial<CollectionState>;
 
         if (version < 2) {
-          return {
-            ...state,
-            hasStartedCollection:
-              Array.isArray(state.quotes) && state.quotes.length > 0,
-          } as CollectionState;
+          state.hasStartedCollection =
+            Array.isArray(state.quotes) && state.quotes.length > 0;
+        }
+
+        if (
+          version < 3 ||
+          (state.logoVariant !== "wordmark" &&
+            state.logoVariant !== "alternate")
+        ) {
+          state.logoVariant = "wordmark";
         }
 
         return state as CollectionState;

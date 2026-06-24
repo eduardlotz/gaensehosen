@@ -2,14 +2,14 @@ import { arc } from "motion/react";
 
 export const primaryButtonLayoutId = "primary-quote-action";
 
-const primaryButtonPath = arc();
+const primaryButtonPath = arc({ strength: 0.2, peak: 0.5 });
 
 export const primaryButtonTransition = {
   layout: {
     type: "spring",
-    stiffness: 620,
-    damping: 28,
-    mass: 0.42,
+    stiffness: 600,
+    damping: 30,
+    mass: 0.5,
     path: primaryButtonPath,
   },
 

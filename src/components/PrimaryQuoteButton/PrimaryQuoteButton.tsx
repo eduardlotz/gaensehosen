@@ -117,6 +117,20 @@ export function PrimaryQuoteButton({
       style={buttonStyle}
       title={buttonConfig.title}
       transition={primaryButtonTransition}
+      whileHover={{
+        scale: 1.007,
+        transition: {
+          type: "spring",
+          duration: 0.05,
+        },
+      }}
+      whileTap={{
+        scale: 0.997,
+        transition: {
+          type: "spring",
+          duration: 0.1,
+        },
+      }}
       type={buttonConfig.type}
       {...props}
     >
