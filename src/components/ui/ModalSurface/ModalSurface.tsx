@@ -8,7 +8,7 @@ import type {
 } from "react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import plusIcon from "../../../icons/plus.svg?raw";
+import arrowIcon from "../../../icons/back-arrow.svg?raw";
 import { IconButton } from "../Button";
 import { classNames } from "../classNames";
 import { SvgIcon } from "../SvgIcon";
@@ -219,7 +219,7 @@ export function ModalCloseButton({
       title={title}
       {...props}
     >
-      <SvgIcon className={styles.closeIcon} svg={plusIcon} />
+      <SvgIcon svg={arrowIcon} />
     </IconButton>
   );
 }
