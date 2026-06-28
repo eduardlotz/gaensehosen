@@ -9,9 +9,17 @@ type HelpModalProps = {
   onClose: () => void;
 };
 
+type DialogLink = {
+  type: "link";
+  href: string;
+  text: string;
+};
+
+type DialogText = string | Array<string | DialogLink>;
+
 type HelpItem = {
   question: string;
-  answer: string;
+  answer: DialogText;
 };
 
 const helpItems: Record<Locale, HelpItem[]> = {
@@ -19,12 +27,12 @@ const helpItems: Record<Locale, HelpItem[]> = {
     {
       question: "Was ist das hier?",
       answer:
-        "Quasi eine Notiz-App im Internet, aber nur für Texte und deren Herkunft.\nEine Website zum Sammeln von Zitaten.",
+        "Eine Website zum Sammeln von Zitaten.\nQuasi eine Notiz-App im Internet, aber nur für Texte und deren Herkunft.",
     },
     {
       question: "Wofür eine Website, ich hab doch meine Notizapp?",
       answer:
-        "Ich wollte eine schlichte Platform zum Sammeln von Zitaten haben.",
+        "Ich auch, aber ich finde dort nichts wieder, wenn ich nicht weiß, wonach ich suche. Ich wollte stattdessen eine schlichte Platform zum Sammeln von Zitaten haben.",
     },
     {
       question: "Wie viel kostet?",
@@ -37,36 +45,75 @@ const helpItems: Record<Locale, HelpItem[]> = {
     },
     {
       question: "Wieso heißt es Gänsehosen?",
-      answer:
-        "Eine Anspielung an das deutsche Meme, in Kombination damit, dass Zitate sowieso schon Gänsefüßchen haben. 🦆",
+      answer: [
+        "Eine Anspielung an ",
+        {
+          type: "link",
+          href: "https://youtube.com/shorts/JhuhaS8Z7cc",
+          text: "das deutsche Meme",
+        },
+        ", in Kombination damit, dass Zitate sowieso schon Gänsefüßchen haben. 🦆",
+      ],
     },
   ],
   en: [
     {
       question: "What is this?",
       answer:
-        "A small notes app in your browser, just for quotes and sources.\nFor collecting, searching, and finding them again.",
+        "A website for collecting quotes.\nBasically a notes app on the internet, but only for text and where it came from.",
     },
     {
       question: "Why a website, I already have my notes app?",
       answer:
-        "So quotes do not disappear between shopping lists, screenshots, and other notes.",
+        "I do too, but I can never find anything there unless I know what I am looking for. I wanted a simple platform for collecting quotes instead.",
     },
     {
       question: "How much does it cost?",
-      answer: "Nothing. Free for you :)",
+      answer: "Free. 🙂",
     },
     {
       question: "Where is my data stored?",
       answer:
-        "In your browser, on the device where you use the site.\nNo accounts, no uploads, no database.",
+        "In your browser, so only on the device where you use the site.\nNothing is uploaded to the internet; it basically works offline.",
     },
     {
       question: "Why is it called Gänsehosen?",
-      answer: "A nod to the German meme.",
+      answer: [
+        "Gänsehosen (geesepants) is a nod to ",
+        {
+          type: "link",
+          href: "https://youtube.com/shorts/JhuhaS8Z7cc",
+          text: "the German meme",
+        },
+        ", combined with the fact, that quotation marks are called Gänsefüßchen (little goose feet) in German. 🦆",
+      ],
     },
   ],
 };
+
+function renderDialogText(text: DialogText) {
+  if (typeof text === "string") {
+    return text;
+  }
+
+  return text.map((part, index) => {
+    if (typeof part === "string") {
+      return part;
+    }
+
+    return (
+      <a
+        className={styles.answerLink}
+        href={part.href}
+        key={`${part.href}-${index}`}
+        rel="noreferrer"
+        target="_blank"
+      >
+        {part.text}
+      </a>
+    );
+  });
+}
 
 export function HelpModal({ locale, open, onClose }: HelpModalProps) {
   if (!open) {
@@ -108,7 +155,7 @@ export function HelpModal({ locale, open, onClose }: HelpModalProps) {
                 {item.question}
               </Text>
               <Text className={styles.answer} tone="muted" variant="body">
-                {item.answer}
+                {renderDialogText(item.answer)}
               </Text>
             </section>
           ))}

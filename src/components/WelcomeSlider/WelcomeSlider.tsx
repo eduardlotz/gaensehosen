@@ -1,5 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
+import chevronIcon from "../../icons/chevron.svg?raw";
+import { SvgIcon } from "../ui";
 import styles from "./WelcomeSlider.module.css";
 
 export type WelcomeSlide = {
@@ -12,8 +15,10 @@ type WelcomeSliderProps = {
 };
 
 const slideIntervalMs = 7000;
+const slideIntervalSeconds = slideIntervalMs / 1000;
+const slideTransitionMs = 620;
 const slideTransition = {
-  duration: 0.62,
+  duration: slideTransitionMs / 1000,
   ease: [0.2, 0.8, 0.2, 1],
 } as const;
 
@@ -30,12 +35,24 @@ export function WelcomeSlider({ slides }: WelcomeSliderProps) {
       return;
     }
 
-    const interval = window.setInterval(() => {
+    const timer = window.setTimeout(() => {
       setActiveSlideIndex((index) => (index + 1) % slides.length);
     }, slideIntervalMs);
 
-    return () => window.clearInterval(interval);
-  }, [slides.length]);
+    return () => window.clearTimeout(timer);
+  }, [activeSlideIndex, slides.length]);
+
+  function showPreviousSlide() {
+    setActiveSlideIndex((index) => (index - 1 + slides.length) % slides.length);
+  }
+
+  function showNextSlide() {
+    setActiveSlideIndex((index) => (index + 1) % slides.length);
+  }
+
+  function showSlide(index: number) {
+    setActiveSlideIndex(index);
+  }
 
   if (!activeSlide) {
     return null;
@@ -65,20 +82,52 @@ export function WelcomeSlider({ slides }: WelcomeSliderProps) {
         </div>
       </div>
 
-      <div className={styles.dots} role="tablist">
-        {slides.map((slide, index) => (
+      {slides.length > 1 ? (
+        <div
+          aria-label={`Welcome quote slides, autoplay every ${slideIntervalSeconds} seconds`}
+          className={styles.stepper}
+          style={
+            {
+              "--step-duration": `${slideTransitionMs}ms`,
+              "--step-fill-duration": `${slideIntervalMs}ms`,
+            } as CSSProperties
+          }
+        >
           <button
-            aria-label={`${index + 1}: ${slide.source}`}
-            aria-selected={activeSlideIndex === index}
-            className={styles.dot}
-            data-active={activeSlideIndex === index}
-            key={`${slide.source}-${index}`}
-            onClick={() => setActiveSlideIndex(index)}
-            role="tab"
+            aria-label="Previous welcome quote"
+            className={`${styles.stepperButton} ${styles.previousButton}`}
+            onClick={showPreviousSlide}
             type="button"
-          />
-        ))}
-      </div>
+          >
+            <SvgIcon className={styles.stepperIcon} svg={chevronIcon} />
+          </button>
+
+          <div className={styles.steps} role="tablist">
+            {slides.map((slide, index) => (
+              <button
+                aria-label={`${index + 1}: ${slide.source || "Unknown"}`}
+                aria-selected={activeSlideIndex === index}
+                className={styles.step}
+                data-active={activeSlideIndex === index}
+                key={`${slide.source}-${index}`}
+                onClick={() => showSlide(index)}
+                role="tab"
+                tabIndex={activeSlideIndex === index ? 0 : -1}
+                type="button"
+              />
+            ))}
+          </div>
+
+          <button
+            aria-label="Next welcome quote"
+            className={`${styles.stepperButton} ${styles.nextButton}`}
+            onClick={showNextSlide}
+            type="button"
+          >
+            <SvgIcon className={styles.stepperIcon} svg={chevronIcon} />
+          </button>
+        </div>
+      ) : null}
     </>
   );
 }

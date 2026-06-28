@@ -103,6 +103,20 @@
   white-space: pre-line;
 }
 
+.answerLink {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 50%, transparent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.14em;
+  transition: text-decoration-color 160ms ease;
+}
+
+.answerLink:hover,
+.answerLink:focus-visible {
+  text-decoration-color: currentColor;
+}
+
 @media (max-width: 760px) {
   .modal {
     --help-modal-width: min(100%, calc(100vw - 36px));

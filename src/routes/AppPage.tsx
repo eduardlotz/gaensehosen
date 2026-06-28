@@ -876,26 +876,33 @@ function WelcomeScreen({
     <>
       <AppHeader locale={locale} />
 
-      <Section
-        className={styles.emptyContent}
-        data-form-active={modalOpen}
-        size="wide"
+      <motion.div
+        animate={{ opacity: 1, filter: "blur(0px)" }}
+        className={styles.welcomePage}
+        initial={{ opacity: 0, filter: "blur(18px)" }}
+        transition={{ duration: 0.72, ease: [0.2, 0.8, 0.2, 1] }}
       >
-        <WelcomeSlider slides={welcomeSlides} />
+        <Section
+          className={styles.emptyContent}
+          data-form-active={modalOpen}
+          size="wide"
+        >
+          <WelcomeSlider slides={welcomeSlides} />
 
-        <motion.div className={styles.rule} />
+          <motion.div className={styles.rule} />
 
-        <Text className={styles.intro} tone="muted" variant="body">
-          {t(locale, "intro")}
-        </Text>
+          <Text className={styles.intro} tone="muted" variant="body">
+            {t(locale, "intro")}
+          </Text>
 
-        <WelcomeActions
-          locale={locale}
-          onHelpClick={onHelpClick}
-          onImportClick={onImportClick}
-          onLocaleChange={onLocaleChange}
-        />
-      </Section>
+          <WelcomeActions
+            locale={locale}
+            onHelpClick={onHelpClick}
+            onImportClick={onImportClick}
+            onLocaleChange={onLocaleChange}
+          />
+        </Section>
+      </motion.div>
     </>
   );
 }
@@ -966,32 +973,56 @@ function getWelcomeSlides(locale: Locale): WelcomeSlide[] {
   if (locale === "en") {
     return [
       {
-        text: t(locale, "heroQuote"),
-        source: t(locale, "heroSource"),
+        text: "The writer struggles so the reader doesn’t have to.",
+        source: "Sven Schnieders",
       },
       {
-        text: "Do what you can, with what you have, where you are.",
-        source: "Theodore Roosevelt",
+        text: "Many times an old man has no other evidence besides his age to prove he has lived a long time.",
+        source: "Seneca",
       },
       {
-        text: "Simplicity is the ultimate sophistication.",
-        source: "Leonardo da Vinci",
+        text: "A man who chases two rabbits catches neither.",
+        source: "Chinese Proverb",
+      },
+      {
+        text: "I make all my decisions on intuition. But then, I must know why I made that decision.",
+        source: "Ingmar Bergman",
+      },
+      {
+        text: "The world is a museum of passion projects.",
+        source: "John Collison",
+      },
+      {
+        text: "The man who does not read has no advantage over the man who cannot read.",
+        source: "Mark Twain",
       },
     ];
   }
 
   return [
     {
-      text: t(locale, "heroQuote"),
-      source: t(locale, "heroSource"),
+      text: "Wie wunderbar ist es, dass niemand einen einzigen Moment warten muss, bevor er anfängt, die Welt zu verbessern.",
+      source: "Anne Frank",
     },
     {
-      text: "Was man nicht aufgibt, hat man nie verloren.",
-      source: "Friedrich Schiller",
+      text: "Der Mensch entdeckt sich selbst, wenn er sich im Spiegel seiner Taten betrachtet.",
+      source: "Antoine de Saint-Exupéry",
     },
     {
-      text: "Hat man sein warum des Lebens, so verträgt man sich fast mit jedem wie",
-      source: "Friedrich Nietzsche",
+      text: "Kunst ist niemals fertig, nur aufgegeben.",
+      source: "Leonardo da Vinci",
+    },
+    {
+      text: "Wege entstehen dadurch, dass man sie geht.",
+      source: "Franz Kafka",
+    },
+    {
+      text: "Weniger, aber besser.",
+      source: "Dieter Rams",
+    },
+    {
+      text: "Der Kampf gegen Gipfel vermag ein Menschenherz auszufüllen. Wir müssen uns Sisyphos als einen glücklichen Menschen vorstellen.",
+      source: "Albert Camus",
     },
   ];
 }
