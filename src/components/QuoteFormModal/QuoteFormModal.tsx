@@ -12,8 +12,9 @@ import {
 } from "react";
 import { PrimaryQuoteButton } from "../PrimaryQuoteButton";
 import { Button, SrOnly, SvgIcon, Text } from "../ui";
-import { t } from "../../i18n/messages";
+import { createTranslator } from "../../i18n/translate";
 import type { Locale, Quote } from "../../store/collectionStore";
+import { quoteFormModalMessages } from "./QuoteFormModal.messages";
 import styles from "./QuoteFormModal.module.css";
 
 const placeholderQuotes = [
@@ -22,7 +23,7 @@ const placeholderQuotes = [
   { text: "Bazinga.", source: "Sheldon Cooper" },
   { text: "Miau.", source: "Gary" },
   { text: "Wow.", source: "Owen Wilson" },
-];
+] as const;
 
 const inputBackgroundLayoutId = "quote-form-input-background";
 const inputBackgroundTransition = {
@@ -71,6 +72,7 @@ export function QuoteFormModal({
   onDelete,
   onSave,
 }: QuoteFormModalProps) {
+  const t = createTranslator(quoteFormModalMessages, locale);
   const [text, setText] = useState(() => quote?.text ?? "");
   const [source, setSource] = useState(() => quote?.source ?? "");
   const [activeInputBackground, setActiveInputBackground] =
@@ -253,7 +255,7 @@ export function QuoteFormModal({
       role="presentation"
     >
       <motion.div
-        aria-label={quote ? t(locale, "editQuote") : t(locale, "addQuote")}
+        aria-label={quote ? t("editQuote") : t("addQuote")}
         aria-modal="true"
         className={styles.editor}
         exit={{ opacity: 0 }}
@@ -267,7 +269,7 @@ export function QuoteFormModal({
         transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
       >
         <Text as="h2" className={styles.title} variant="title">
-          {quote ? t(locale, "editQuote") : t(locale, "addQuote")}
+          {quote ? t("editQuote") : t("addQuote")}
         </Text>
 
         <form className={styles.form} id={formId} onSubmit={submit}>
@@ -277,7 +279,7 @@ export function QuoteFormModal({
               onBlur={clearInputBackground}
               onFocus={() => setActiveInputBackground("text")}
             >
-              <SrOnly>{t(locale, "quoteText")}</SrOnly>
+              <SrOnly>{t("quoteText")}</SrOnly>
               <span
                 className={`${styles.quoteMark} ${styles.openingQuoteMark}`}
               >
@@ -319,7 +321,7 @@ export function QuoteFormModal({
               onBlur={clearInputBackground}
               onFocus={() => setActiveInputBackground("source")}
             >
-              <SrOnly>{t(locale, "source")}</SrOnly>
+              <SrOnly>{t("source")}</SrOnly>
               <span className={styles.sourceInputWrap}>
                 <span className={styles.sourceMirror} aria-hidden="true">
                   <AnimatePresence initial={false}>
@@ -352,7 +354,7 @@ export function QuoteFormModal({
             <PrimaryQuoteButton
               state={{
                 kind: "save",
-                label: t(locale, "saveQuote"),
+                label: t("saveQuote"),
                 position: "relative",
                 type: "submit",
               }}
@@ -367,7 +369,7 @@ export function QuoteFormModal({
                 type="button"
                 variant="danger"
               >
-                {t(locale, "delete")}
+                {t("delete")}
               </Button>
             ) : null}
           </div>

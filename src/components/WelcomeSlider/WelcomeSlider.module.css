@@ -30,7 +30,7 @@
 }
 
 .quoteMark {
-  color: var(--color-brand);
+  color: var(--color-text);
 }
 
 .heroSource {
@@ -43,32 +43,149 @@
   line-height: 1.15;
 }
 
-.dots {
+.stepper {
+  --step-duration: 620ms;
+  --step-fill-duration: 7000ms;
+  position: relative;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin: 42px 0 64px;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 42px auto 64px;
 }
 
-.dot {
+.stepperButton {
+  --focus-ring-offset: 2px;
+  --focus-ring-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    scale 80ms ease;
+}
+
+.stepperButton:hover {
+  background: color-mix(
+    in srgb,
+    var(--color-surface-soft) 35%,
+    var(--color-text) 5%
+  );
+  color: var(--color-text);
+}
+
+.stepperButton:active {
+  scale: 0.96;
+}
+
+.stepperIcon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.stepperIcon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.previousButton .stepperIcon {
+  transform: rotate(90deg);
+}
+
+.nextButton .stepperIcon {
+  transform: rotate(-90deg);
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.step {
+  --focus-ring-offset: 2px;
+  --focus-ring-radius: 18px;
+  position: relative;
+  isolation: isolate;
   display: block;
   width: 12px;
   height: 12px;
+  min-width: 0;
   padding: 0;
   border: 0;
-  border-radius: 12px;
-  background: var(--color-text-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+  background: transparent;
+  color: var(--color-text-subtle);
   cursor: pointer;
-  transition: width 220ms ease;
+  transition:
+    width var(--step-duration) cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 180ms ease;
 }
 
-.dot[data-active="true"] {
-  width: 24px;
+.step::before,
+.step::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.step::before {
+  background: currentColor;
+  opacity: 0.42;
+}
+
+.step::after {
+  z-index: 1;
+  width: 0;
   background: var(--color-text);
+  opacity: 0;
 }
 
-.dot:hover {
-  background: var(--color-text-muted);
+.step[data-active="true"] {
+  width: 28px;
+  color: var(--color-text-subtle);
+}
+
+.step[data-active="true"]::before {
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.step[data-active="true"]::after {
+  opacity: 1;
+  animation: stepFill var(--step-fill-duration) linear forwards;
+}
+
+.step:hover {
+  color: var(--color-text);
+}
+
+@keyframes stepFill {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 
 @media (max-width: 760px) {
@@ -76,7 +193,33 @@
     height: 13.5rem;
   }
 
-  .dots {
-    margin: 34px 0 54px;
+  .stepper {
+    margin: 34px auto 54px;
+  }
+}
+
+@media (max-width: 520px) {
+  .stepper {
+    max-width: calc(100% - 44px);
+  }
+
+  .steps {
+    gap: 9px;
+  }
+
+  .step[data-active="true"] {
+    width: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .stepperButton {
+    transition: none;
+  }
+
+  .step[data-active="true"]::after {
+    width: 100%;
+    animation: none;
   }
 }

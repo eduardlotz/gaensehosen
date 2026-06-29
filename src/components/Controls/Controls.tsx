@@ -7,11 +7,14 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
 import { controlIndicatorTransition } from "../motionTransitions";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { createTranslator } from "../../i18n/translate";
 import type { FontSize, GridMode, Locale } from "../../store/collectionStore";
-import { t } from "../../i18n/messages";
 import { SvgIcon } from "../ui";
 import { classNames } from "../ui/classNames";
+import { controlsMessages } from "./Controls.messages";
 import styles from "./Controls.module.css";
+
+type ControlsTranslationKey = keyof (typeof controlsMessages)["de"];
 
 const fontSizes: FontSize[] = [16, 24, 32, 40];
 const gridModes = [
@@ -19,7 +22,11 @@ const gridModes = [
   { value: "grid", icon: gridIcon, labelKey: "gridGrid" },
   { value: "list", icon: listIcon, labelKey: "gridList" },
   { value: "focus", icon: focusIcon, labelKey: "gridFocus" },
-] satisfies { value: GridMode; icon: string; labelKey: Parameters<typeof t>[1] }[];
+] satisfies {
+  value: GridMode;
+  icon: string;
+  labelKey: ControlsTranslationKey;
+}[];
 
 export type MobileControlOptionsOpen = "grid" | "fontSize" | null;
 
@@ -114,6 +121,7 @@ function MobileControls({
   onGridModeChange,
   onMobileOptionsOpenChange,
 }: ControlsProps) {
+  const t = createTranslator(controlsMessages, locale);
   const optionsOpen = mobileOptionsOpen;
   const gridOptionsOpen = optionsOpen === "grid";
   const fontSizeOptionsOpen = optionsOpen === "fontSize";
@@ -173,15 +181,15 @@ function MobileControls({
                   key="mobile-grid-closed"
                   transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
                 >
-                  <SegmentedControl label={t(locale, "grid")}>
+                  <SegmentedControl label={t("grid")}>
                     <button
                       className={classNames(styles.segment, styles.iconSegment)}
                       data-active="true"
                       onClick={() => onGridModeChange(gridMode)}
                       title={
                         activeGridMode
-                          ? t(locale, activeGridMode.labelKey)
-                          : t(locale, "grid")
+                          ? t(activeGridMode.labelKey)
+                          : t("grid")
                       }
                       type="button"
                     >
@@ -197,7 +205,7 @@ function MobileControls({
                       aria-expanded={gridOptionsOpen}
                       className={classNames(styles.segment, styles.iconSegment)}
                       onClick={() => onMobileOptionsOpenChange?.("grid")}
-                      title={t(locale, "options")}
+                      title={t("options")}
                       type="button"
                     >
                       <span className={styles.segmentContent}>
@@ -250,12 +258,12 @@ function MobileControls({
                   key="mobile-font-size-closed"
                   transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
                 >
-                  <SegmentedControl label={t(locale, "fontSize")}>
+                  <SegmentedControl label={t("fontSize")}>
                     <button
                       aria-expanded={fontSizeOptionsOpen}
                       className={classNames(styles.segment, styles.iconSegment)}
                       onClick={() => onMobileOptionsOpenChange?.("fontSize")}
-                      title={t(locale, "options")}
+                      title={t("options")}
                       type="button"
                     >
                       <span className={styles.segmentContent}>
@@ -266,7 +274,7 @@ function MobileControls({
                       className={styles.segment}
                       data-active="true"
                       onClick={() => onFontSizeChange(fontSize)}
-                      title={`${t(locale, "fontSize")} ${fontSize}`}
+                      title={`${t("fontSize")} ${fontSize}`}
                       type="button"
                     >
                       <ActiveIndicator layoutId="mobile-font-size-control-active" />
@@ -296,8 +304,9 @@ function GridSegmentedControl({
   locale,
   onGridModeChange,
 }: GridSegmentedControlProps) {
+  const t = createTranslator(controlsMessages, locale);
   return (
-    <SegmentedControl label={t(locale, "grid")}>
+    <SegmentedControl label={t("grid")}>
       {gridModes.map(({ value, icon, labelKey }) => {
         const active = gridMode === value;
 
@@ -307,7 +316,7 @@ function GridSegmentedControl({
             data-active={active}
             key={value}
             onClick={() => onGridModeChange(value)}
-            title={t(locale, labelKey)}
+            title={t(labelKey)}
             type="button"
           >
             {active ? <ActiveIndicator layoutId={layoutId} /> : null}
@@ -334,8 +343,9 @@ function FontSizeSegmentedControl({
   locale,
   onFontSizeChange,
 }: FontSizeSegmentedControlProps) {
+  const t = createTranslator(controlsMessages, locale);
   return (
-    <SegmentedControl label={t(locale, "fontSize")}>
+    <SegmentedControl label={t("fontSize")}>
       {fontSizes.map((size) => {
         const active = fontSize === size;
 
@@ -345,7 +355,7 @@ function FontSizeSegmentedControl({
             data-active={active}
             key={size}
             onClick={() => onFontSizeChange(size)}
-            title={`${t(locale, "fontSize")} ${size}`}
+            title={`${t("fontSize")} ${size}`}
             type="button"
           >
             {active ? <ActiveIndicator layoutId={layoutId} /> : null}

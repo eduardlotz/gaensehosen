@@ -162,8 +162,8 @@
 }
 
 .quoteGrid[data-form-active="true"] {
-  filter: blur(16px);
-  opacity: 0.2;
+  filter: blur(22px);
+  opacity: 0.12;
   transform: scale(0.95);
   pointer-events: none;
 }
@@ -305,7 +305,7 @@
 .emptyContent {
   width: min(1210px, calc(100vw - 48px));
   max-width: 780px;
-  margin: 88px auto 0;
+  margin: 132px auto 0;
   transition:
     filter 360ms ease,
     opacity 360ms ease,
@@ -313,8 +313,8 @@
 }
 
 .emptyContent[data-form-active="true"] {
-  filter: blur(8px);
-  opacity: 0;
+  filter: blur(18px);
+  opacity: 0.1;
   transform: translateY(20px) scale(0.9);
   pointer-events: none;
 }
@@ -778,8 +778,8 @@
 }
 
 .focusListShell[data-form-active="true"] {
-  filter: blur(8px);
-  opacity: 0.34;
+  filter: blur(14px);
+  opacity: 0.18;
   transform: translateY(72px) scale(0.95);
   pointer-events: none;
 }
@@ -964,7 +964,7 @@
   }
 
   .emptyContent {
-    margin-top: 56px;
+    margin-top: 92px;
   }
 
   .welcomeActions {

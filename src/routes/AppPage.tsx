@@ -38,7 +38,7 @@ import {
   Text,
 } from "../components/ui";
 import { QuoteFormModal } from "../components/QuoteFormModal";
-import { t } from "../i18n/messages";
+import { createTranslator, getLocaleMessages } from "../i18n/translate";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useOutsideClick } from "../hooks/useOutsideClick";
 import { useCollectionStore } from "../store/collectionStore";
@@ -50,6 +50,7 @@ import type {
   ThemeName,
 } from "../store/collectionStore";
 import { parseQuotesCsv, serializeQuotesCsv } from "../utils/quoteCsv";
+import { appPageMessages } from "./AppPage.messages";
 import styles from "./AppPage.module.css";
 
 const quoteFormId = "quote-form";
@@ -86,6 +87,8 @@ export function AppPage() {
     theme,
     updateQuote,
   } = useCollectionStore();
+  const t = createTranslator(appPageMessages, locale);
+  const messages = getLocaleMessages(appPageMessages, locale);
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -100,6 +103,10 @@ export function AppPage() {
       ? "edit"
       : "add"
     : "closed";
+
+  function changeLocale(nextLocale: Locale) {
+    setLocale(nextLocale);
+  }
 
   const filteredQuotes = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -127,7 +134,7 @@ export function AppPage() {
     32: 3,
     40: 2,
   }[fontSize];
-  const welcomeSlides = useMemo(() => getWelcomeSlides(locale), [locale]);
+  const welcomeSlides = useMemo(() => messages.welcomeSlides, [messages]);
 
   function openCreateForm() {
     setEditingQuote(undefined);
@@ -171,7 +178,7 @@ export function AppPage() {
         importQuotes(importedQuotes);
       }
     } catch {
-      window.alert(t(locale, "importCsvError"));
+      window.alert(t("importCsvError"));
     }
   }
 
@@ -237,7 +244,7 @@ export function AppPage() {
             onExportClick={() => downloadQuotesCsv(quotes)}
             onHelpClick={openHelpDialog}
             onImportClick={() => importInputRef.current?.click()}
-            onLocaleChange={setLocale}
+            onLocaleChange={changeLocale}
             onQuoteClick={openEditForm}
             onResetClick={() => setResetConfirmOpen(true)}
             onThemeChange={setTheme}
@@ -251,7 +258,7 @@ export function AppPage() {
             modalOpen={modalOpen}
             onHelpClick={openHelpDialog}
             onImportClick={() => importInputRef.current?.click()}
-            onLocaleChange={setLocale}
+            onLocaleChange={changeLocale}
             welcomeSlides={welcomeSlides}
           />
         )}
@@ -272,7 +279,6 @@ export function AppPage() {
               state={{
                 kind: "closeControls",
                 label: t(
-                  locale,
                   mobileOptionsOpen === "grid"
                     ? "closeControls"
                     : "closeFontSizeControls",
@@ -286,7 +292,7 @@ export function AppPage() {
               key="floating-quote-utility-button"
               state={{
                 kind: "clearSearch",
-                label: t(locale, "clearSearch"),
+                label: t("clearSearch"),
                 onClick: () => setQuery(""),
               }}
             />
@@ -295,7 +301,7 @@ export function AppPage() {
               key="open-quote-form-button"
               state={{
                 kind: "add",
-                label: t(locale, "addQuote"),
+                label: t("addQuote"),
                 onClick: openCreateForm,
                 position: "fixed",
               }}
@@ -444,6 +450,7 @@ function CollectionApp({
   setQuery,
   theme,
 }: CollectionAppProps) {
+  const t = createTranslator(appPageMessages, locale);
   const hasNoResults = filteredQuotes.length === 0;
   const isMobile = useIsMobile();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -505,18 +512,18 @@ function CollectionApp({
           >
             <SvgIcon className={styles.searchIcon} svg={searchIcon} />
             <input
-              aria-label={t(locale, "search")}
+              aria-label={t("search")}
               className={styles.searchInput}
               onChange={handleSearchChange}
               onFocus={openMobileSearch}
-              placeholder={t(locale, "search")}
+              placeholder={t("search")}
               ref={searchInputRef}
               type="search"
               value={query}
             />
             {query ? (
               <Button
-                aria-label={t(locale, "clearSearch")}
+                aria-label={t("clearSearch")}
                 className={styles.searchClearButton}
                 icon={
                   <SvgIcon className={styles.searchClearIcon} svg={plusIcon} />
@@ -527,7 +534,7 @@ function CollectionApp({
                 }}
                 onMouseDown={(event) => event.preventDefault()}
                 size="small"
-                title={t(locale, "clearSearch")}
+                title={t("clearSearch")}
                 type="button"
                 variant="flat"
               />
@@ -539,10 +546,10 @@ function CollectionApp({
             <Menu.Root modal={false}>
               <Menu.Trigger
                 className={styles.optionsButton}
-                title={t(locale, "options")}
+                title={t("options")}
                 type="button"
               >
-                <span>{t(locale, "options")}</span>
+                <span>{t("options")}</span>
                 <SvgIcon className={styles.buttonIcon} svg={threeDotsIcon} />
               </Menu.Trigger>
               <Menu.Portal>
@@ -560,7 +567,7 @@ function CollectionApp({
                         className={styles.buttonIcon}
                         svg={questionCircleIcon}
                       />
-                      <span>{t(locale, "help")}</span>
+                      <span>{t("help")}</span>
                     </Menu.Item>
                     <Menu.Item
                       className={styles.actionMenuItem}
@@ -569,7 +576,7 @@ function CollectionApp({
                       }
                     >
                       <SvgIcon className={styles.buttonIcon} svg={globeIcon} />
-                      <span>{t(locale, "language")}</span>
+                      <span>{t("language")}</span>
                     </Menu.Item>
                     <Menu.Item
                       className={styles.actionMenuItem}
@@ -581,7 +588,7 @@ function CollectionApp({
                         className={styles.buttonIcon}
                         svg={theme === "light" ? moonIcon : sunIcon}
                       />
-                      <span>{t(locale, "theme")}</span>
+                      <span>{t("theme")}</span>
                     </Menu.Item>
 
                     <Menu.Item
@@ -589,14 +596,14 @@ function CollectionApp({
                       onClick={onExportClick}
                     >
                       <SvgIcon className={styles.buttonIcon} svg={exportIcon} />
-                      <span>{t(locale, "exportCsv")}</span>
+                      <span>{t("exportCsv")}</span>
                     </Menu.Item>
                     <Menu.Item
                       className={styles.actionMenuItem}
                       onClick={onImportClick}
                     >
                       <SvgIcon className={styles.buttonIcon} svg={fileIcon} />
-                      <span>{t(locale, "importCsv")}</span>
+                      <span>{t("importCsv")}</span>
                     </Menu.Item>
 
                     <Menu.Item
@@ -604,7 +611,7 @@ function CollectionApp({
                       onClick={onResetClick}
                     >
                       <SvgIcon className={styles.buttonIcon} svg={trashIcon} />
-                      <span>{t(locale, "resetApp")}</span>
+                      <span>{t("resetApp")}</span>
                     </Menu.Item>
                   </Menu.Popup>
                 </Menu.Positioner>
@@ -628,7 +635,7 @@ function CollectionApp({
         <NoResultsScreen
           formMode={formMode}
           formOpen={modalOpen}
-          text={t(locale, "noResults")}
+          text={t("noResults")}
         />
       ) : (
         <QuoteResultsLayout
@@ -730,6 +737,8 @@ function ResetConfirmDialog({
   onCancel,
   onConfirm,
 }: ResetConfirmDialogProps) {
+  const t = createTranslator(appPageMessages, locale);
+
   return (
     <FullScreenDialog
       aria-labelledby="reset-dialog-title"
@@ -737,9 +746,9 @@ function ResetConfirmDialog({
       onClose={onCancel}
     >
       <ModalCloseButton
-        aria-label={t(locale, "cancel")}
+        aria-label={t("cancel")}
         onClick={onCancel}
-        title={t(locale, "cancel")}
+        title={t("cancel")}
       />
 
       <Text
@@ -748,7 +757,7 @@ function ResetConfirmDialog({
         id="reset-dialog-title"
         variant="title"
       >
-        {t(locale, "resetAppTitle")}
+        {t("resetAppTitle")}
       </Text>
 
       <div className={styles.resetDialogActions}>
@@ -758,7 +767,7 @@ function ResetConfirmDialog({
           type="button"
           variant="danger"
         >
-          {t(locale, "resetAppConfirm")}
+          {t("resetAppConfirm")}
         </Button>
         <Button
           icon={<SvgIcon svg={backArrowIcon} />}
@@ -766,7 +775,7 @@ function ResetConfirmDialog({
           type="button"
           variant="default"
         >
-          {t(locale, "resetAppCancel")}
+          {t("resetAppCancel")}
         </Button>
       </div>
     </FullScreenDialog>
@@ -858,7 +867,7 @@ function AnimatedPondDrawing() {
 type WelcomeScreenProps = {
   locale: Locale;
   modalOpen: boolean;
-  welcomeSlides: WelcomeSlide[];
+  welcomeSlides: readonly WelcomeSlide[];
   onHelpClick: () => void;
   onImportClick: () => void;
   onLocaleChange: (locale: Locale) => void;
@@ -872,30 +881,39 @@ function WelcomeScreen({
   onLocaleChange,
   welcomeSlides,
 }: WelcomeScreenProps) {
+  const t = createTranslator(appPageMessages, locale);
+
   return (
     <>
       <AppHeader locale={locale} />
 
-      <Section
-        className={styles.emptyContent}
-        data-form-active={modalOpen}
-        size="wide"
+      <motion.div
+        animate={{ opacity: 1, filter: "blur(0px)" }}
+        className={styles.welcomePage}
+        initial={{ opacity: 0, filter: "blur(18px)" }}
+        transition={{ duration: 0.72, ease: [0.2, 0.8, 0.2, 1] }}
       >
-        <WelcomeSlider slides={welcomeSlides} />
+        <Section
+          className={styles.emptyContent}
+          data-form-active={modalOpen}
+          size="wide"
+        >
+          <WelcomeSlider slides={welcomeSlides} />
 
-        <motion.div className={styles.rule} />
+          <motion.div className={styles.rule} />
 
-        <Text className={styles.intro} tone="muted" variant="body">
-          {t(locale, "intro")}
-        </Text>
+          <Text className={styles.intro} tone="muted" variant="body">
+            {t("intro")}
+          </Text>
 
-        <WelcomeActions
-          locale={locale}
-          onHelpClick={onHelpClick}
-          onImportClick={onImportClick}
-          onLocaleChange={onLocaleChange}
-        />
-      </Section>
+          <WelcomeActions
+            locale={locale}
+            onHelpClick={onHelpClick}
+            onImportClick={onImportClick}
+            onLocaleChange={onLocaleChange}
+          />
+        </Section>
+      </motion.div>
     </>
   );
 }
@@ -913,9 +931,11 @@ function WelcomeActions({
   onImportClick,
   onLocaleChange,
 }: WelcomeActionsProps) {
+  const t = createTranslator(appPageMessages, locale);
+
   return (
     <section className={styles.welcomeActions}>
-      <div className={styles.localeSwitch} aria-label={t(locale, "language")}>
+      <div className={styles.localeSwitch} aria-label={t("language")}>
         <div className={styles.localeButtons}>
           <button
             className={styles.localeButton}
@@ -944,7 +964,7 @@ function WelcomeActions({
           type="button"
           variant="flat"
         >
-          {t(locale, "importCsv")}
+          {t("importCsv")}
         </Button>
         <Button
           icon={
@@ -955,45 +975,11 @@ function WelcomeActions({
           type="button"
           variant="flat"
         >
-          {t(locale, "help")}
+          {t("help")}
         </Button>
       </div>
     </section>
   );
-}
-
-function getWelcomeSlides(locale: Locale): WelcomeSlide[] {
-  if (locale === "en") {
-    return [
-      {
-        text: t(locale, "heroQuote"),
-        source: t(locale, "heroSource"),
-      },
-      {
-        text: "Do what you can, with what you have, where you are.",
-        source: "Theodore Roosevelt",
-      },
-      {
-        text: "Simplicity is the ultimate sophistication.",
-        source: "Leonardo da Vinci",
-      },
-    ];
-  }
-
-  return [
-    {
-      text: t(locale, "heroQuote"),
-      source: t(locale, "heroSource"),
-    },
-    {
-      text: "Was man nicht aufgibt, hat man nie verloren.",
-      source: "Friedrich Schiller",
-    },
-    {
-      text: "Hat man sein warum des Lebens, so verträgt man sich fast mit jedem wie",
-      source: "Friedrich Nietzsche",
-    },
-  ];
 }
 
 type FocusQuoteListProps = {

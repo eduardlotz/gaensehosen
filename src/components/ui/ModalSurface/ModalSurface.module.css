@@ -29,25 +29,16 @@
 }
 
 .closeButton {
-  --button-bg: var(--color-surface-soft);
-  --button-bg-hover: color-mix(
-    in srgb,
-    var(--color-surface-soft) 92%,
-    var(--color-text) 8%
-  );
-  --button-radius: 18px;
-  --button-shadow: none;
-  --button-shadow-hover: none;
   position: fixed;
-  top: 24px;
-  right: 32px;
+  top: 0;
+  left: 10%;
   z-index: 1;
 }
 
 .closeIcon {
   display: inline-flex;
-  transform: rotate(45deg);
-  transform-origin: 50% 50%;
+  /* transform: rotate(45deg);
+  transform-origin: 50% 50%; */
 }
 
 .closeIcon,

@@ -1,6 +1,10 @@
 import { FullScreenDialog, ModalCloseButton, Text } from "../ui";
-import { t } from "../../i18n/messages";
+import { createTranslator, getLocaleMessages } from "../../i18n/translate";
 import type { Locale } from "../../store/collectionStore";
+import {
+  helpModalMessages,
+  type DialogText,
+} from "./HelpModal.messages";
 import styles from "./HelpModal.module.css";
 
 type HelpModalProps = {
@@ -9,66 +13,34 @@ type HelpModalProps = {
   onClose: () => void;
 };
 
-type HelpItem = {
-  question: string;
-  answer: string;
-};
+function renderDialogText(text: DialogText) {
+  if (typeof text === "string") {
+    return text;
+  }
 
-const helpItems: Record<Locale, HelpItem[]> = {
-  de: [
-    {
-      question: "Was ist das hier?",
-      answer:
-        "Quasi eine Notiz-App im Internet, aber nur für Texte und deren Herkunft.\nEine Website zum Sammeln von Zitaten.",
-    },
-    {
-      question: "Wofür eine Website, ich hab doch meine Notizapp?",
-      answer:
-        "Ich wollte eine schlichte Platform zum Sammeln von Zitaten haben.",
-    },
-    {
-      question: "Wie viel kostet?",
-      answer: "Kostenlos. 🙂",
-    },
-    {
-      question: "Wo werden meine Daten gespeichert?",
-      answer:
-        "In deinem Browser, also nur auf dem Gerät, auf dem du die Seite benutzt.\nEs wird nichts im Internet hochgeladen, alles funktioniert quasi offline.",
-    },
-    {
-      question: "Wieso heißt es Gänsehosen?",
-      answer:
-        "Eine Anspielung an das deutsche Meme, in Kombination damit, dass Zitate sowieso schon Gänsefüßchen haben. 🦆",
-    },
-  ],
-  en: [
-    {
-      question: "What is this?",
-      answer:
-        "A small notes app in your browser, just for quotes and sources.\nFor collecting, searching, and finding them again.",
-    },
-    {
-      question: "Why a website, I already have my notes app?",
-      answer:
-        "So quotes do not disappear between shopping lists, screenshots, and other notes.",
-    },
-    {
-      question: "How much does it cost?",
-      answer: "Nothing. Free for you :)",
-    },
-    {
-      question: "Where is my data stored?",
-      answer:
-        "In your browser, on the device where you use the site.\nNo accounts, no uploads, no database.",
-    },
-    {
-      question: "Why is it called Gänsehosen?",
-      answer: "A nod to the German meme.",
-    },
-  ],
-};
+  return text.map((part, index) => {
+    if (typeof part === "string") {
+      return part;
+    }
+
+    return (
+      <a
+        className={styles.answerLink}
+        href={part.href}
+        key={`${part.href}-${index}`}
+        rel="noreferrer"
+        target="_blank"
+      >
+        {part.text}
+      </a>
+    );
+  });
+}
 
 export function HelpModal({ locale, open, onClose }: HelpModalProps) {
+  const t = createTranslator(helpModalMessages, locale);
+  const messages = getLocaleMessages(helpModalMessages, locale);
+
   if (!open) {
     return null;
   }
@@ -88,27 +60,27 @@ export function HelpModal({ locale, open, onClose }: HelpModalProps) {
           variant="title"
         >
           <span className={styles.quoteMark}>„</span>
-          {t(locale, "help")}
+          {t("title")}
           <span className={styles.quoteMark}>“</span>
         </Text>
 
         <ModalCloseButton
-          aria-label={t(locale, "cancel")}
+          aria-label={t("close")}
           className={styles.closeButton}
           onClick={onClose}
-          title={t(locale, "cancel")}
+          title={t("close")}
         />
       </div>
 
       <div className={styles.scrollContent}>
         <div className={styles.items}>
-          {helpItems[locale].map((item) => (
+          {messages.items.map((item) => (
             <section className={styles.item} key={item.question}>
               <Text as="h3" className={styles.question} variant="body">
                 {item.question}
               </Text>
               <Text className={styles.answer} tone="muted" variant="body">
-                {item.answer}
+                {renderDialogText(item.answer)}
               </Text>
             </section>
           ))}

@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { t } from "../../i18n/messages";
+import { createTranslator } from "../../i18n/translate";
 import type { Locale } from "../../store/collectionStore";
 import { useCollectionStore } from "../../store/collectionStore";
+import { brandMessages } from "./Brand.messages";
 import styles from "./Brand.module.css";
 
 type BrandProps = {
@@ -224,6 +225,7 @@ function AlternateLogo() {
 }
 
 export function Brand({ locale }: BrandProps) {
+  const t = createTranslator(brandMessages, locale);
   const logoVariant = useCollectionStore((state) => state.logoVariant);
   const setLogoVariant = useCollectionStore((state) => state.setLogoVariant);
   const [hasHydrated, setHasHydrated] = useState(
@@ -237,7 +239,7 @@ export function Brand({ locale }: BrandProps) {
     );
   }, []);
 
-  const toggleLabel = t(locale, "toggleLogo");
+  const toggleLabel = t("toggleLogo");
 
   return (
     <motion.button
@@ -266,7 +268,7 @@ export function Brand({ locale }: BrandProps) {
           {logoVariant === "wordmark" ? <CurrentLogo /> : <AlternateLogo />}
         </motion.span>
       </AnimatePresence>
-      <span className={styles.srOnly}>{t(locale, "brand")}</span>
+      <span className={styles.srOnly}>{t("brand")}</span>
     </motion.button>
   );
 }

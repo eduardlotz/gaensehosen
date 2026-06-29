@@ -99,8 +99,7 @@
   --button-fg: var(--color-text);
 }
 
-.flat,
-.icon {
+.flat {
   --button-bg: var(--color-surface-soft);
   --button-bg-hover: color-mix(
     in srgb,
