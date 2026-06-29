@@ -11,11 +11,10 @@ export type WelcomeSlide = {
 };
 
 type WelcomeSliderProps = {
-  slides: WelcomeSlide[];
+  slides: readonly WelcomeSlide[];
 };
 
-const slideIntervalMs = 7000;
-const slideIntervalSeconds = slideIntervalMs / 1000;
+const slideIntervalMs = 5000;
 const slideTransitionMs = 620;
 const slideTransition = {
   duration: slideTransitionMs / 1000,
@@ -84,7 +83,6 @@ export function WelcomeSlider({ slides }: WelcomeSliderProps) {
 
       {slides.length > 1 ? (
         <div
-          aria-label={`Welcome quote slides, autoplay every ${slideIntervalSeconds} seconds`}
           className={styles.stepper}
           style={
             {

@@ -62,8 +62,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   border-radius: 16px;
@@ -79,8 +79,8 @@
 .stepperButton:hover {
   background: color-mix(
     in srgb,
-    var(--color-surface-soft) 84%,
-    var(--color-text) 16%
+    var(--color-surface-soft) 35%,
+    var(--color-text) 5%
   );
   color: var(--color-text);
 }
