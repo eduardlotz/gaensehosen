@@ -43,7 +43,7 @@
 
 .welcome {
   overflow: hidden;
-  padding: 20px 24px 96px;
+  padding: 20px 24px 48px;
 }
 
 .welcome::before {
@@ -59,7 +59,7 @@
 
 .welcome::after {
   bottom: 0;
-  height: 164px;
+  height: 112px;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--color-background) 0%, transparent) 0%,

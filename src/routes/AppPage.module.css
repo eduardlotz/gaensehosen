@@ -302,10 +302,6 @@
   /* opacity: 0.58; */
 }
 
-.welcomePage {
-  min-height: inherit;
-}
-
 .emptyContent {
   width: min(1210px, calc(100vw - 48px));
   max-width: 780px;
