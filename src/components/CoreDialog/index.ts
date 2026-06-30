@@ -1,0 +1,1 @@
+export { CoreDialog } from "./CoreDialog";

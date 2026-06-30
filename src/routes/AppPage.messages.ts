@@ -12,9 +12,16 @@ type AppPageMessages = {
   importCsv: string;
   importCsvError: string;
   intro: string;
+  jumpToQuotes: string;
+  keyboardShortcut: string;
+  keyboardShortcuts: string;
   language: string;
+  newQuoteShortcut: string;
   noResults: string;
+  openQuoteShortcut: string;
   options: string;
+  quoteNavigationShortcut: string;
+  quotes: string;
   resetApp: string;
   resetAppCancel: string;
   resetAppConfirm: string;
@@ -26,7 +33,7 @@ type AppPageMessages = {
 
 export const appPageMessages = {
   de: {
-    addQuote: "Zitat hinzufügen",
+    addQuote: "Neues Zitat",
     cancel: "Abbrechen",
     clearSearch: "Filter entfernen",
     closeControls: "Rasteroptionen schließen",
@@ -37,9 +44,16 @@ export const appPageMessages = {
     importCsvError: "Die CSV konnte nicht importiert werden.",
     intro:
       "Ich liebe schöne Zitate.\nDie meisten lese ich aber nie wieder.\nSie liegen immer irgendwo verteilt auf Post-Its, meiner Notiz-App und einer Menge Screenshots.\nAus diesem Grund habe ich diese Website gebaut.\n\nEin Ort für meine (und deine) Lieblingszitate.\nNicht mehr und nicht weniger.",
+    jumpToQuotes: "Zu den Zitaten springen",
+    keyboardShortcut: "Tastaturkurzbefehl",
+    keyboardShortcuts: "Tastaturkürzel",
     language: "Sprache ändern",
+    newQuoteShortcut: "Neues Zitat",
     noResults: "Nichts hier...",
+    openQuoteShortcut: "Fokussiertes Zitat öffnen",
     options: "Optionen",
+    quoteNavigationShortcut: "Zwischen Zitaten navigieren",
+    quotes: "Zitate",
     resetApp: "Alles löschen",
     resetAppCancel: "Nein, zurück",
     resetAppConfirm: "Ja, alles löschen",
@@ -74,7 +88,7 @@ export const appPageMessages = {
     ],
   },
   en: {
-    addQuote: "Add quote",
+    addQuote: "New quote",
     cancel: "Cancel",
     clearSearch: "Clear search",
     closeControls: "Close grid options",
@@ -85,9 +99,16 @@ export const appPageMessages = {
     importCsvError: "The CSV could not be imported.",
     intro:
       "I love beautiful quotes.\nMost of them I never read again.\nThey end up scattered across sticky notes, my notes app, and far too many screenshots.\nThat is why I built this site.\n\nA place for my (and your) favorite quotes.\nNothing more and nothing less.",
+    jumpToQuotes: "Jump to quotes",
+    keyboardShortcut: "Keyboard shortcut",
+    keyboardShortcuts: "Keyboard shortcuts",
     language: "Change language",
+    newQuoteShortcut: "Open new quote form",
     noResults: "Nothing here...",
+    openQuoteShortcut: "Open focused quote",
     options: "Options",
+    quoteNavigationShortcut: "Navigate between quotes",
+    quotes: "Quotes",
     resetApp: "Delete everything",
     resetAppCancel: "No, go back",
     resetAppConfirm: "Yes, delete everything",
@@ -104,8 +125,8 @@ export const appPageMessages = {
         source: "José Olivarez",
       },
       {
-        text: "Yesterday is dead, tomorrow hasn't arrived yet. I have just one day, and I'm going to be happy in it.",
-        source: "Groucho Marx",
+        text: "It's hard to be poor if you're making the lives of the people around you rich.",
+        source: "Michael Thompson",
       },
       {
         text: "I make all my decisions on intuition. But then, I must know why I made that decision.",

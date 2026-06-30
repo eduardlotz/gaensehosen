@@ -1,0 +1,105 @@
+.backdrop {
+  --core-dialog-backdrop-padding-top: 120px;
+
+  z-index: 100;
+  overflow: hidden;
+  padding: var(--core-dialog-backdrop-padding-top) 0;
+  backdrop-filter: blur(44px);
+  -webkit-backdrop-filter: blur(44px);
+}
+
+.dialog {
+  --core-dialog-width: min(760px, calc(100vw - 48px));
+  --core-dialog-header-padding-top: 104px;
+  --core-dialog-close-offset: 64px;
+  --core-dialog-scroll-padding-bottom: 96px;
+
+  display: flex;
+  flex-direction: column;
+  width: var(--core-dialog-width);
+  height: calc(100dvh - 40px);
+  min-height: 0;
+  overflow: visible;
+}
+
+.stickyHeader {
+  position: absolute;
+  top: calc(var(--core-dialog-backdrop-padding-top) * -1);
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: var(--core-dialog-width);
+  padding: var(--core-dialog-header-padding-top) 0 20px;
+  transform: translateX(-50%);
+}
+
+.stickyHeader .closeButton {
+  position: absolute;
+  top: var(--core-dialog-header-padding-top);
+  right: auto;
+  left: calc(var(--core-dialog-close-offset) * -1);
+  z-index: 3;
+}
+
+.scrollContent {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 0 var(--core-dialog-scroll-padding-bottom);
+  overscroll-behavior: contain;
+  scroll-padding-bottom: var(--core-dialog-scroll-padding-bottom);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollContent::-webkit-scrollbar {
+  display: none;
+}
+
+.title {
+  min-width: 0;
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1.625rem, 4vw, 1.875rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.quoteMark {
+  color: var(--color-brand);
+}
+
+@media (max-width: 760px) {
+  .dialog {
+    --core-dialog-width: min(100%, calc(100vw - 36px));
+    --core-dialog-header-padding-top: 72px;
+    --core-dialog-scroll-padding-bottom: 112px;
+
+    width: var(--core-dialog-width);
+    height: calc(100dvh - 36px);
+  }
+
+  .backdrop {
+    padding-bottom: 18px;
+  }
+
+  .stickyHeader {
+    padding-top: var(--core-dialog-header-padding-top);
+  }
+
+  .stickyHeader .closeButton {
+    position: static;
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .dialog {
+    --core-dialog-header-padding-top: 58px;
+  }
+}

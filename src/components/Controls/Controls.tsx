@@ -9,6 +9,8 @@ import { controlIndicatorTransition } from "../motionTransitions";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { createTranslator } from "../../i18n/translate";
 import type { FontSize, GridMode, Locale } from "../../store/collectionStore";
+import type { KeyboardShortcutItem } from "../../utils/keyboardShortcuts";
+import { ShortcutTooltip } from "../ShortcutTooltip";
 import { SvgIcon } from "../ui";
 import { classNames } from "../ui/classNames";
 import { controlsMessages } from "./Controls.messages";
@@ -34,6 +36,10 @@ type ControlsProps = {
   locale: Locale;
   fontSize: FontSize;
   gridMode: GridMode;
+  shortcuts?: {
+    fontSizes: Record<FontSize, KeyboardShortcutItem>;
+    gridModes: Record<GridMode, KeyboardShortcutItem>;
+  };
   onFontSizeChange: (fontSize: FontSize) => void;
   onGridModeChange: (gridMode: GridMode) => void;
   mobileOptionsOpen?: MobileControlOptionsOpen;
@@ -44,6 +50,7 @@ export function Controls({
   locale,
   fontSize,
   gridMode,
+  shortcuts,
   onFontSizeChange,
   onGridModeChange,
   mobileOptionsOpen,
@@ -58,6 +65,7 @@ export function Controls({
         gridMode={gridMode}
         locale={locale}
         mobileOptionsOpen={mobileOptionsOpen}
+        shortcuts={shortcuts}
         onFontSizeChange={onFontSizeChange}
         onGridModeChange={onGridModeChange}
         onMobileOptionsOpenChange={onMobileOptionsOpenChange}
@@ -70,6 +78,7 @@ export function Controls({
       fontSize={fontSize}
       gridMode={gridMode}
       locale={locale}
+      shortcuts={shortcuts}
       onFontSizeChange={onFontSizeChange}
       onGridModeChange={onGridModeChange}
       onMobileOptionsOpenChange={onMobileOptionsOpenChange}
@@ -81,6 +90,7 @@ function DesktopControls({
   locale,
   fontSize,
   gridMode,
+  shortcuts,
   onFontSizeChange,
   onGridModeChange,
   onMobileOptionsOpenChange,
@@ -91,20 +101,28 @@ function DesktopControls({
 
   return (
     <>
-      <div className={`${styles.controlDock} ${styles.gridDock}`}>
+      <div
+        className={`${styles.controlDock} ${styles.gridDock}`}
+        data-control-shortcut-target="grid"
+      >
         <GridSegmentedControl
           gridMode={gridMode}
           layoutId="desktop-grid-control-active"
           locale={locale}
+          shortcuts={shortcuts?.gridModes}
           onGridModeChange={onGridModeChange}
         />
       </div>
 
-      <div className={`${styles.controlDock} ${styles.sizeDock}`}>
+      <div
+        className={`${styles.controlDock} ${styles.sizeDock}`}
+        data-control-shortcut-target="fontSize"
+      >
         <FontSizeSegmentedControl
           fontSize={fontSize}
           layoutId="desktop-font-size-control-active"
           locale={locale}
+          shortcuts={shortcuts?.fontSizes}
           onFontSizeChange={onFontSizeChange}
         />
       </div>
@@ -116,6 +134,7 @@ function MobileControls({
   locale,
   fontSize,
   gridMode,
+  shortcuts,
   mobileOptionsOpen = null,
   onFontSizeChange,
   onGridModeChange,
@@ -148,6 +167,7 @@ function MobileControls({
           <motion.div
             animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             className={`${styles.controlDock} ${styles.gridDock}`}
+            data-control-shortcut-target="grid"
             data-mobile-floating-controls=""
             exit={{ opacity: 0, x: -28, filter: "blur(10px)" }}
             initial={{ opacity: 0, x: -28, filter: "blur(10px)" }}
@@ -169,6 +189,7 @@ function MobileControls({
                     gridMode={gridMode}
                     layoutId="mobile-grid-control-active"
                     locale={locale}
+                    shortcuts={shortcuts?.gridModes}
                     onGridModeChange={selectGridMode}
                   />
                 </motion.div>
@@ -182,36 +203,50 @@ function MobileControls({
                   transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
                 >
                   <SegmentedControl label={t("grid")}>
-                    <button
-                      className={classNames(styles.segment, styles.iconSegment)}
-                      data-active="true"
-                      onClick={() => onGridModeChange(gridMode)}
-                      title={
+                    <MaybeShortcutTooltip
+                      label={
                         activeGridMode
                           ? t(activeGridMode.labelKey)
                           : t("grid")
                       }
-                      type="button"
+                      shortcut={shortcuts?.gridModes[gridMode]}
                     >
-                      <ActiveIndicator layoutId="mobile-grid-control-active" />
-                      <span className={styles.segmentContent}>
-                        <SvgIcon
-                          className={styles.icon}
-                          svg={activeGridMode?.icon ?? gridIcon}
-                        />
-                      </span>
-                    </button>
-                    <button
-                      aria-expanded={gridOptionsOpen}
-                      className={classNames(styles.segment, styles.iconSegment)}
-                      onClick={() => onMobileOptionsOpenChange?.("grid")}
-                      title={t("options")}
-                      type="button"
+                      <button
+                        className={classNames(styles.segment, styles.iconSegment)}
+                        data-active="true"
+                        onClick={() => onGridModeChange(gridMode)}
+                        title={
+                          activeGridMode
+                            ? t(activeGridMode.labelKey)
+                            : t("grid")
+                        }
+                        type="button"
+                      >
+                        <ActiveIndicator layoutId="mobile-grid-control-active" />
+                        <span className={styles.segmentContent}>
+                          <SvgIcon
+                            className={styles.icon}
+                            svg={activeGridMode?.icon ?? gridIcon}
+                          />
+                        </span>
+                      </button>
+                    </MaybeShortcutTooltip>
+                    <MaybeShortcutTooltip
+                      label={t("grid")}
+                      shortcut={undefined}
                     >
-                      <span className={styles.segmentContent}>
-                        <SvgIcon className={styles.icon} svg={threeDotsIcon} />
-                      </span>
-                    </button>
+                      <button
+                        aria-expanded={gridOptionsOpen}
+                        className={classNames(styles.segment, styles.iconSegment)}
+                        onClick={() => onMobileOptionsOpenChange?.("grid")}
+                        title={t("options")}
+                        type="button"
+                      >
+                        <span className={styles.segmentContent}>
+                          <SvgIcon className={styles.icon} svg={threeDotsIcon} />
+                        </span>
+                      </button>
+                    </MaybeShortcutTooltip>
                   </SegmentedControl>
                 </motion.div>
               )}
@@ -225,6 +260,7 @@ function MobileControls({
           <motion.div
             animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             className={`${styles.controlDock} ${styles.sizeDock}`}
+            data-control-shortcut-target="fontSize"
             data-mobile-floating-controls=""
             exit={{ opacity: 0, x: 28, filter: "blur(10px)" }}
             initial={{ opacity: 0, x: 28, filter: "blur(10px)" }}
@@ -246,6 +282,7 @@ function MobileControls({
                     fontSize={fontSize}
                     layoutId="mobile-font-size-control-active"
                     locale={locale}
+                    shortcuts={shortcuts?.fontSizes}
                     onFontSizeChange={selectFontSize}
                   />
                 </motion.div>
@@ -259,27 +296,37 @@ function MobileControls({
                   transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
                 >
                   <SegmentedControl label={t("fontSize")}>
-                    <button
-                      aria-expanded={fontSizeOptionsOpen}
-                      className={classNames(styles.segment, styles.iconSegment)}
-                      onClick={() => onMobileOptionsOpenChange?.("fontSize")}
-                      title={t("options")}
-                      type="button"
+                    <MaybeShortcutTooltip
+                      label={t("fontSize")}
+                      shortcut={undefined}
                     >
-                      <span className={styles.segmentContent}>
-                        <SvgIcon className={styles.icon} svg={threeDotsIcon} />
-                      </span>
-                    </button>
-                    <button
-                      className={styles.segment}
-                      data-active="true"
-                      onClick={() => onFontSizeChange(fontSize)}
-                      title={`${t("fontSize")} ${fontSize}`}
-                      type="button"
+                      <button
+                        aria-expanded={fontSizeOptionsOpen}
+                        className={classNames(styles.segment, styles.iconSegment)}
+                        onClick={() => onMobileOptionsOpenChange?.("fontSize")}
+                        title={t("options")}
+                        type="button"
+                      >
+                        <span className={styles.segmentContent}>
+                          <SvgIcon className={styles.icon} svg={threeDotsIcon} />
+                        </span>
+                      </button>
+                    </MaybeShortcutTooltip>
+                    <MaybeShortcutTooltip
+                      label={`${t("fontSize")} ${fontSize}`}
+                      shortcut={shortcuts?.fontSizes[fontSize]}
                     >
-                      <ActiveIndicator layoutId="mobile-font-size-control-active" />
-                      <span className={styles.segmentContent}>{fontSize}</span>
-                    </button>
+                      <button
+                        className={styles.segment}
+                        data-active="true"
+                        onClick={() => onFontSizeChange(fontSize)}
+                        title={`${t("fontSize")} ${fontSize}`}
+                        type="button"
+                      >
+                        <ActiveIndicator layoutId="mobile-font-size-control-active" />
+                        <span className={styles.segmentContent}>{fontSize}</span>
+                      </button>
+                    </MaybeShortcutTooltip>
                   </SegmentedControl>
                 </motion.div>
               )}
@@ -295,6 +342,7 @@ type GridSegmentedControlProps = {
   gridMode: GridMode;
   layoutId: string;
   locale: Locale;
+  shortcuts?: Record<GridMode, KeyboardShortcutItem>;
   onGridModeChange: (gridMode: GridMode) => void;
 };
 
@@ -302,6 +350,7 @@ function GridSegmentedControl({
   gridMode,
   layoutId,
   locale,
+  shortcuts,
   onGridModeChange,
 }: GridSegmentedControlProps) {
   const t = createTranslator(controlsMessages, locale);
@@ -311,19 +360,24 @@ function GridSegmentedControl({
         const active = gridMode === value;
 
         return (
-          <button
-            className={classNames(styles.segment, styles.iconSegment)}
-            data-active={active}
+          <MaybeShortcutTooltip
             key={value}
-            onClick={() => onGridModeChange(value)}
-            title={t(labelKey)}
-            type="button"
+            label={t(labelKey)}
+            shortcut={shortcuts?.[value]}
           >
-            {active ? <ActiveIndicator layoutId={layoutId} /> : null}
-            <span className={styles.segmentContent}>
-              <SvgIcon className={styles.icon} svg={icon} />
-            </span>
-          </button>
+            <button
+              className={classNames(styles.segment, styles.iconSegment)}
+              data-active={active}
+              onClick={() => onGridModeChange(value)}
+              title={t(labelKey)}
+              type="button"
+            >
+              {active ? <ActiveIndicator layoutId={layoutId} /> : null}
+              <span className={styles.segmentContent}>
+                <SvgIcon className={styles.icon} svg={icon} />
+              </span>
+            </button>
+          </MaybeShortcutTooltip>
         );
       })}
     </SegmentedControl>
@@ -334,6 +388,7 @@ type FontSizeSegmentedControlProps = {
   fontSize: FontSize;
   layoutId: string;
   locale: Locale;
+  shortcuts?: Record<FontSize, KeyboardShortcutItem>;
   onFontSizeChange: (fontSize: FontSize) => void;
 };
 
@@ -341,6 +396,7 @@ function FontSizeSegmentedControl({
   fontSize,
   layoutId,
   locale,
+  shortcuts,
   onFontSizeChange,
 }: FontSizeSegmentedControlProps) {
   const t = createTranslator(controlsMessages, locale);
@@ -350,17 +406,22 @@ function FontSizeSegmentedControl({
         const active = fontSize === size;
 
         return (
-          <button
-            className={styles.segment}
-            data-active={active}
+          <MaybeShortcutTooltip
             key={size}
-            onClick={() => onFontSizeChange(size)}
-            title={`${t("fontSize")} ${size}`}
-            type="button"
+            label={`${t("fontSize")} ${size}`}
+            shortcut={shortcuts?.[size]}
           >
-            {active ? <ActiveIndicator layoutId={layoutId} /> : null}
-            <span className={styles.segmentContent}>{size}</span>
-          </button>
+            <button
+              className={styles.segment}
+              data-active={active}
+              onClick={() => onFontSizeChange(size)}
+              title={`${t("fontSize")} ${size}`}
+              type="button"
+            >
+              {active ? <ActiveIndicator layoutId={layoutId} /> : null}
+              <span className={styles.segmentContent}>{size}</span>
+            </button>
+          </MaybeShortcutTooltip>
         );
       })}
     </SegmentedControl>
@@ -394,3 +455,29 @@ function ActiveIndicator({ layoutId }: ActiveIndicatorProps) {
     />
   );
 }
+
+type MaybeShortcutTooltipProps = {
+  children: ReactNode;
+  label: string;
+  shortcut?: KeyboardShortcutItem;
+};
+
+function MaybeShortcutTooltip({
+  children,
+  label,
+  shortcut,
+}: MaybeShortcutTooltipProps) {
+  if (!shortcut) {
+    return children;
+  }
+
+  return (
+    <ShortcutTooltip label={label} shortcut={shortcut}>
+      {children as ReactElementWithShortcutTooltip}
+    </ShortcutTooltip>
+  );
+}
+
+type ReactElementWithShortcutTooltip = Parameters<
+  typeof ShortcutTooltip
+>[0]["children"];

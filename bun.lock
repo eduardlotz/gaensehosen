@@ -6,6 +6,7 @@
       "name": "gaensehosen",
       "dependencies": {
         "@base-ui/react": "^1.5.0",
+        "@floating-ui/react-dom": "^2.1.8",
         "@vercel/analytics": "^2.0.1",
         "motion": "^12.40.0",
         "react": "^19.2.0",
