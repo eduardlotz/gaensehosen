@@ -4,7 +4,6 @@ import {
   ChangeEvent,
   FocusEvent,
   FormEvent,
-  KeyboardEvent,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -13,6 +12,7 @@ import {
 import { PrimaryQuoteButton } from "../PrimaryQuoteButton";
 import { Button, SrOnly, SvgIcon, Text } from "../ui";
 import { createTranslator } from "../../i18n/translate";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import type { Locale, Quote } from "../../store/collectionStore";
 import { quoteFormModalMessages } from "./QuoteFormModal.messages";
 import styles from "./QuoteFormModal.module.css";
@@ -43,15 +43,6 @@ const inputBackgroundTransition = {
 } as const;
 
 type ActiveInputBackground = "text" | "source" | null;
-
-const focusableSelector = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
 
 type QuoteFormModalProps = {
   locale: Locale;
@@ -88,50 +79,15 @@ export function QuoteFormModal({
   });
   const quoteInputRef = useRef<HTMLTextAreaElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
-  const previouslyFocusedElementRef = useRef<HTMLElement | null>(
-    document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null,
-  );
+  const { handleKeyDown } = useFocusTrap({
+    containerRef: editorRef,
+    enabled: open,
+    initialFocusRef: quoteInputRef,
+  });
 
   useLayoutEffect(() => {
     resizeQuoteInput();
   }, [text]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const focusTimer = window.setTimeout(() => {
-      quoteInputRef.current?.focus({ preventScroll: true });
-    }, 0);
-
-    function keepFocusInDialog(event: globalThis.FocusEvent) {
-      const editor = editorRef.current;
-
-      if (!editor) {
-        return;
-      }
-
-      if (event.target instanceof Node && editor.contains(event.target)) {
-        return;
-      }
-
-      focusFirstDialogControl();
-    }
-
-    document.addEventListener("focusin", keepFocusInDialog);
-
-    return () => {
-      window.clearTimeout(focusTimer);
-      document.removeEventListener("focusin", keepFocusInDialog);
-
-      if (previouslyFocusedElementRef.current?.isConnected) {
-        previouslyFocusedElementRef.current.focus();
-      }
-    };
-  }, [open]);
 
   if (!open) {
     return null;
@@ -183,69 +139,6 @@ export function QuoteFormModal({
     setActiveInputBackground(null);
   }
 
-  function getFocusableElements() {
-    const editor = editorRef.current;
-
-    if (!editor) {
-      return [];
-    }
-
-    return Array.from(
-      editor.querySelectorAll<HTMLElement>(focusableSelector),
-    ).filter(
-      (element) =>
-        element.tabIndex !== -1 &&
-        !element.hasAttribute("disabled") &&
-        element.getAttribute("aria-hidden") !== "true",
-    );
-  }
-
-  function focusFirstDialogControl() {
-    const firstFocusableElement = getFocusableElements()[0];
-
-    if (firstFocusableElement) {
-      firstFocusableElement.focus();
-      return;
-    }
-
-    editorRef.current?.focus();
-  }
-
-  function trapFocus(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const editor = editorRef.current;
-    const focusableElements = getFocusableElements();
-
-    if (!editor || focusableElements.length === 0) {
-      event.preventDefault();
-      editor?.focus();
-      return;
-    }
-
-    const firstFocusableElement = focusableElements[0];
-    const lastFocusableElement =
-      focusableElements[focusableElements.length - 1];
-    const activeElement = document.activeElement;
-
-    if (
-      event.shiftKey &&
-      (activeElement === firstFocusableElement ||
-        !(activeElement instanceof Node && editor.contains(activeElement)))
-    ) {
-      event.preventDefault();
-      lastFocusableElement.focus();
-      return;
-    }
-
-    if (!event.shiftKey && activeElement === lastFocusableElement) {
-      event.preventDefault();
-      firstFocusableElement.focus();
-    }
-  }
-
   return (
     <motion.div
       className={styles.backdrop}
@@ -261,7 +154,7 @@ export function QuoteFormModal({
         exit={{ opacity: 0 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        onKeyDown={trapFocus}
+        onKeyDown={handleKeyDown}
         onMouseDown={(event) => event.stopPropagation()}
         ref={editorRef}
         role="dialog"

@@ -1,77 +1,5 @@
-.backdrop {
-  --help-backdrop-padding-top: 120px;
-
-  z-index: 100;
-  overflow: hidden;
-  padding: var(--help-backdrop-padding-top) 0;
-  backdrop-filter: blur(44px);
-  -webkit-backdrop-filter: blur(44px);
-}
-
-.modal {
-  --help-modal-width: min(760px, calc(100vw - 48px));
-  --help-header-padding-top: 104px;
-  --help-close-offset: 64px;
-  --help-scroll-padding-bottom: 96px;
-
-  display: flex;
-  flex-direction: column;
-  width: var(--help-modal-width);
-  height: calc(100dvh - 40px);
-  min-height: 0;
-  overflow: visible;
-}
-
-.stickyHeader {
-  position: absolute;
-  top: calc(var(--help-backdrop-padding-top) * -1);
-  left: 50%;
-  z-index: 2;
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  width: var(--help-modal-width);
-  padding: var(--help-header-padding-top) 0 20px;
-  transform: translateX(-50%);
-}
-
-.stickyHeader .closeButton {
-  position: absolute;
-  top: var(--help-header-padding-top);
-  right: auto;
-  left: calc(var(--help-close-offset) * -1);
-  z-index: 3;
-}
-
 .scrollContent {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 0 0 var(--help-scroll-padding-bottom);
-  overscroll-behavior: contain;
-  scroll-padding-bottom: var(--help-scroll-padding-bottom);
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.scrollContent::-webkit-scrollbar {
-  display: none;
-}
-
-.title {
-  min-width: 0;
-  margin: 0;
-  color: var(--color-text);
-  font-size: clamp(1.625rem, 4vw, 1.875rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
-}
-
-.quoteMark {
-  color: var(--color-brand);
+  display: block;
 }
 
 .items {
@@ -118,28 +46,6 @@
 }
 
 @media (max-width: 760px) {
-  .modal {
-    --help-modal-width: min(100%, calc(100vw - 36px));
-    --help-header-padding-top: 72px;
-    --help-scroll-padding-bottom: 112px;
-
-    width: var(--help-modal-width);
-    height: calc(100dvh - 36px);
-  }
-
-  .backdrop {
-    padding-bottom: 18px;
-  }
-
-  .stickyHeader {
-    padding-top: var(--help-header-padding-top);
-  }
-
-  .stickyHeader .closeButton {
-    position: static;
-    flex: 0 0 auto;
-  }
-
   .items {
     gap: 34px;
     padding-top: 44px;
@@ -147,10 +53,6 @@
 }
 
 @media (max-width: 520px) {
-  .modal {
-    --help-header-padding-top: 58px;
-  }
-
   .question {
     font-size: 1.08rem;
   }

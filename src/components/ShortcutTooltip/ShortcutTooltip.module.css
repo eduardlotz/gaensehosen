@@ -1,0 +1,42 @@
+.anchor {
+  display: inline-flex;
+}
+
+.tooltip {
+  z-index: 140;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(260px, calc(100vw - 24px));
+  border-radius: 14px;
+  padding: 8px 10px 8px 12px;
+  background: rgb(0 0 0 / 0.9);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 8px 24px rgb(0 0 0 / 0.18);
+  color: #fff;
+  pointer-events: none;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcut {
+  flex: 0 0 auto;
+}
+
+:global(.themeDark) .tooltip {
+  background: rgb(0 0 0 / 0.9);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 8px 24px rgb(0 0 0 / 0.24);
+}

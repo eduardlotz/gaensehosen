@@ -3,25 +3,17 @@ import type {
   AriaAttributes,
   ComponentProps,
   HTMLAttributes,
-  KeyboardEvent,
   ReactNode,
+  RefObject,
 } from "react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import arrowIcon from "../../../icons/back-arrow.svg?raw";
+import { useFocusTrap } from "../../../hooks/useFocusTrap";
 import { IconButton } from "../Button";
 import { classNames } from "../classNames";
 import { SvgIcon } from "../SvgIcon";
 import styles from "./ModalSurface.module.css";
-
-const focusableSelector = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
 
 type FullScreenDialogProps = AriaAttributes & {
   children: ReactNode;
@@ -29,6 +21,7 @@ type FullScreenDialogProps = AriaAttributes & {
   contentClassName?: string;
   id?: string;
   onClose: () => void;
+  restoreFocusRef?: RefObject<HTMLElement | null>;
 };
 
 export function ModalBackdrop({
@@ -49,126 +42,28 @@ export function FullScreenDialog({
   children,
   contentClassName,
   onClose,
+  restoreFocusRef,
   ...props
 }: FullScreenDialogProps) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
-  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
+  const { handleKeyDown } = useFocusTrap({
+    containerRef: dialogRef,
+    onEscape: onClose,
+    restoreFocusRef,
+  });
 
   useEffect(() => {
-    previouslyFocusedElementRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-
     const previousBodyOverflow = document.body.style.overflow;
     const previousHtmlOverflow = document.documentElement.style.overflow;
 
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
 
-    const focusTimer = window.setTimeout(() => {
-      focusFirstDialogControl();
-    }, 0);
-
-    function handleKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    }
-
-    function keepFocusInDialog(event: globalThis.FocusEvent) {
-      const dialog = dialogRef.current;
-
-      if (!dialog) {
-        return;
-      }
-
-      if (event.target instanceof Node && dialog.contains(event.target)) {
-        return;
-      }
-
-      focusFirstDialogControl();
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("focusin", keepFocusInDialog);
-
     return () => {
-      window.clearTimeout(focusTimer);
-      window.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("focusin", keepFocusInDialog);
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
-
-      if (previouslyFocusedElementRef.current?.isConnected) {
-        previouslyFocusedElementRef.current.focus();
-      }
     };
-  }, [onClose]);
-
-  function getFocusableElements() {
-    const dialog = dialogRef.current;
-
-    if (!dialog) {
-      return [];
-    }
-
-    return Array.from(
-      dialog.querySelectorAll<HTMLElement>(focusableSelector),
-    ).filter(
-      (element) =>
-        element.tabIndex !== -1 &&
-        !element.hasAttribute("disabled") &&
-        element.getAttribute("aria-hidden") !== "true",
-    );
-  }
-
-  function focusFirstDialogControl() {
-    const firstFocusableElement = getFocusableElements()[0];
-
-    if (firstFocusableElement) {
-      firstFocusableElement.focus();
-      return;
-    }
-
-    dialogRef.current?.focus();
-  }
-
-  function trapFocus(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const dialog = dialogRef.current;
-    const focusableElements = getFocusableElements();
-
-    if (!dialog || focusableElements.length === 0) {
-      event.preventDefault();
-      dialog?.focus();
-      return;
-    }
-
-    const firstFocusableElement = focusableElements[0];
-    const lastFocusableElement =
-      focusableElements[focusableElements.length - 1];
-    const activeElement = document.activeElement;
-
-    if (
-      event.shiftKey &&
-      (activeElement === firstFocusableElement ||
-        !(activeElement instanceof Node && dialog.contains(activeElement)))
-    ) {
-      event.preventDefault();
-      lastFocusableElement.focus();
-      return;
-    }
-
-    if (!event.shiftKey && activeElement === lastFocusableElement) {
-      event.preventDefault();
-      firstFocusableElement.focus();
-    }
-  }
+  }, []);
 
   return createPortal(
     <motion.div
@@ -185,7 +80,7 @@ export function FullScreenDialog({
         className={classNames(styles.fullScreenDialog, contentClassName)}
         exit={{ opacity: 0, y: 10, scale: 0.98 }}
         initial={{ opacity: 0, y: 14, scale: 0.98 }}
-        onKeyDown={trapFocus}
+        onKeyDown={handleKeyDown}
         onMouseDown={(event) => event.stopPropagation()}
         ref={dialogRef}
         aria-modal="true"

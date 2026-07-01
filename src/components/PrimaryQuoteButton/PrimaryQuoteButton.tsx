@@ -3,6 +3,7 @@ import type { HTMLMotionProps } from "motion/react";
 import type { CSSProperties } from "react";
 import { match } from "ts-pattern";
 import plusIcon from "../../icons/plus.svg?raw";
+import type { KeyboardShortcutItem } from "../../utils/keyboardShortcuts";
 import {
   primaryButtonLayoutId,
   primaryButtonTransition,
@@ -19,6 +20,7 @@ type PrimaryQuoteButtonProps = Omit<
   HTMLMotionProps<"button">,
   "aria-label" | "children" | "onClick" | "type"
 > & {
+  shortcut?: KeyboardShortcutItem;
   state: PrimaryQuoteButtonState;
   textSize?: CSSProperties["fontSize"];
 };
@@ -57,6 +59,7 @@ const primaryIconStyle = {
 
 export function PrimaryQuoteButton({
   className,
+  shortcut: _shortcut,
   state,
   style,
   textSize,
