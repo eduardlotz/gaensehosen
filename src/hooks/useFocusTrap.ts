@@ -10,6 +10,8 @@ const focusableSelector = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
+const activeTrapStack: HTMLElement[] = [];
+
 type UseFocusTrapOptions = {
   containerRef: RefObject<HTMLElement | null>;
   enabled?: boolean;
@@ -38,19 +40,30 @@ export function useFocusTrap({
       return;
     }
 
+    const currentContainer = containerRef.current;
+
+    if (!currentContainer) {
+      return;
+    }
+
+    const trapContainer: HTMLElement = currentContainer;
+
+    activeTrapStack.push(trapContainer);
+
     const focusTimer = window.setTimeout(() => {
       focusInitialElement();
     }, 0);
 
     function handleDocumentFocusIn(event: globalThis.FocusEvent) {
-      const container = containerRef.current;
-
-      if (!container) {
+      if (
+        event.target instanceof HTMLElement &&
+        trapContainer.contains(event.target)
+      ) {
+        lastFocusedInsideRef.current = event.target;
         return;
       }
 
-      if (event.target instanceof HTMLElement && container.contains(event.target)) {
-        lastFocusedInsideRef.current = event.target;
+      if (!isTopTrap(trapContainer)) {
         return;
       }
 
@@ -60,7 +73,11 @@ export function useFocusTrap({
     function handleDocumentKeyDown(event: globalThis.KeyboardEvent) {
       const escapeHandler = onEscapeRef.current;
 
-      if (event.key !== "Escape" || !escapeHandler) {
+      if (
+        event.key !== "Escape" ||
+        !escapeHandler ||
+        !isTopTrap(trapContainer)
+      ) {
         return;
       }
 
@@ -73,6 +90,7 @@ export function useFocusTrap({
 
     return () => {
       window.clearTimeout(focusTimer);
+      removeActiveTrap(trapContainer);
       document.removeEventListener("focusin", handleDocumentFocusIn);
       window.removeEventListener("keydown", handleDocumentKeyDown);
       restoreFocus();
@@ -134,8 +152,7 @@ export function useFocusTrap({
   function restoreFocus() {
     const restoreFocusElement = restoreFocusRef?.current ?? openerRef.current;
 
-    if (restoreFocusElement && canReceiveFocus(restoreFocusElement)) {
-      suppressRestoredFocusRing(restoreFocusElement);
+    if (restoreFocusElement && canRestoreFocus(restoreFocusElement)) {
       restoreFocusElement.focus({ preventScroll: true });
     }
   }
@@ -178,6 +195,18 @@ export function useFocusTrap({
   return { handleKeyDown };
 }
 
+function isTopTrap(container: HTMLElement) {
+  return activeTrapStack[activeTrapStack.length - 1] === container;
+}
+
+function removeActiveTrap(container: HTMLElement) {
+  const index = activeTrapStack.lastIndexOf(container);
+
+  if (index !== -1) {
+    activeTrapStack.splice(index, 1);
+  }
+}
+
 function getActiveElement() {
   if (typeof document === "undefined") {
     return null;
@@ -196,27 +225,17 @@ function canReceiveFocus(element: HTMLElement) {
   );
 }
 
-function suppressRestoredFocusRing(element: HTMLElement) {
-  element.dataset.suppressFocusRing = "true";
-
-  function clearSuppression() {
-    element.removeAttribute("data-suppress-focus-ring");
-    element.removeEventListener("blur", clearSuppression);
-    element.removeEventListener("keydown", handleKeyDown);
+function canRestoreFocus(element: HTMLElement) {
+  if (!canReceiveFocus(element)) {
+    return false;
   }
 
-  function handleKeyDown(event: globalThis.KeyboardEvent) {
-    if (
-      event.key === "Tab" ||
-      event.key === "ArrowDown" ||
-      event.key === "ArrowLeft" ||
-      event.key === "ArrowRight" ||
-      event.key === "ArrowUp"
-    ) {
-      clearSuppression();
-    }
-  }
-
-  element.addEventListener("blur", clearSuppression);
-  element.addEventListener("keydown", handleKeyDown);
+  return (
+    element instanceof HTMLAnchorElement ||
+    element instanceof HTMLButtonElement ||
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLSelectElement ||
+    element instanceof HTMLTextAreaElement ||
+    element.isContentEditable
+  );
 }

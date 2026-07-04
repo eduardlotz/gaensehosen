@@ -106,7 +106,6 @@ export function QuoteFormModal({
 
   function deleteQuote() {
     onDelete?.();
-    onClose();
   }
 
   function resizeQuoteInput() {

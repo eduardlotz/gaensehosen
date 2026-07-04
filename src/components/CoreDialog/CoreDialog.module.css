@@ -74,6 +74,40 @@
   color: var(--color-brand);
 }
 
+.confirmationDialog {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  width: min(520px, calc(100vw - 48px));
+  min-height: calc(100vh - 100px);
+  color: var(--color-text);
+}
+
+.confirmationTitle.title {
+  text-align: center;
+}
+
+.confirmationDescription {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.confirmationActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
 @media (max-width: 760px) {
   .dialog {
     --core-dialog-width: min(100%, calc(100vw - 36px));
@@ -101,5 +135,13 @@
 @media (max-width: 520px) {
   .dialog {
     --core-dialog-header-padding-top: 58px;
+  }
+
+  .confirmationActions {
+    width: 100%;
+  }
+
+  .confirmationActions > * {
+    --button-width: 100%;
   }
 }

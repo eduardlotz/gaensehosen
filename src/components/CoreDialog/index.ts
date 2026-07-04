@@ -1,1 +1,1 @@
-export { CoreDialog } from "./CoreDialog";
+export { ConfirmationDialog, CoreDialog } from "./CoreDialog";

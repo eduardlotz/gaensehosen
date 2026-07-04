@@ -649,33 +649,6 @@
     0 2px 7px rgb(255 31 31 / 0.08);
 }
 
-.resetDialog {
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 24px;
-  width: min(520px, 100%);
-  min-height: calc(100vh - 100px);
-  color: var(--color-text);
-}
-
-.resetDialogTitle {
-  color: var(--color-text);
-  font-size: clamp(1.625rem, 4vw, 1.875rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.12;
-  text-align: center;
-}
-
-.resetDialogActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
 @keyframes actionMenuItemIn {
   from {
     opacity: 0;
@@ -1164,20 +1137,9 @@
   }
 }
 
-@media (max-width: 520px) {
-  .resetDialogActions {
-    width: 100%;
-  }
-
-  .resetDialogActions > * {
-    --button-width: 100%;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .actionMenu,
-  .actionMenuItem,
-  .resetDialog {
+  .actionMenuItem {
     animation: none !important;
     transition: none !important;
   }

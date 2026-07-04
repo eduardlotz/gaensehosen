@@ -25,6 +25,7 @@ type AppPageMessages = {
   resetApp: string;
   resetAppCancel: string;
   resetAppConfirm: string;
+  resetAppDescription: string;
   resetAppTitle: string;
   search: string;
   theme: string;
@@ -57,6 +58,8 @@ export const appPageMessages = {
     resetApp: "Alles löschen",
     resetAppCancel: "Nein, zurück",
     resetAppConfirm: "Ja, alles löschen",
+    resetAppDescription:
+      "Alle Zitate und Einstellungen werden dauerhaft von diesem Gerät entfernt.",
     resetAppTitle: "Alles löschen?",
     search: "Suchen",
     theme: "Theme ändern",
@@ -112,6 +115,8 @@ export const appPageMessages = {
     resetApp: "Delete everything",
     resetAppCancel: "No, go back",
     resetAppConfirm: "Yes, delete everything",
+    resetAppDescription:
+      "All quotes and settings will be permanently removed from this device.",
     resetAppTitle: "Delete everything?",
     search: "Search",
     theme: "Change theme",

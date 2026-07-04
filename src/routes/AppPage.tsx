@@ -10,7 +10,6 @@ import type {
   RefObject,
 } from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import backArrowIcon from "../icons/back-arrow.svg?raw";
 import exportIcon from "../icons/export-arrow.svg?raw";
 import fileIcon from "../icons/file.svg?raw";
 import globeIcon from "../icons/globe.svg?raw";
@@ -34,16 +33,10 @@ import { KeyboardShortcutKeys } from "../components/KeyboardShortcut";
 import { PrimaryQuoteButton } from "../components/PrimaryQuoteButton";
 import { WelcomeSlider, type WelcomeSlide } from "../components/WelcomeSlider";
 import { ShortcutsDialog } from "../components/ShortcutsDialog";
-import {
-  Button,
-  FullScreenDialog,
-  ModalCloseButton,
-  Page,
-  Section,
-  SvgIcon,
-  Text,
-} from "../components/ui";
+import { ConfirmationDialog } from "../components/CoreDialog";
+import { Button, Page, Section, SvgIcon, Text } from "../components/ui";
 import { QuoteFormModal } from "../components/QuoteFormModal";
+import { quoteFormModalMessages } from "../components/QuoteFormModal/QuoteFormModal.messages";
 import { createTranslator, getLocaleMessages } from "../i18n/translate";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useKeyPress } from "../hooks/useKeyPress";
@@ -101,9 +94,11 @@ export function AppPage() {
     updateQuote,
   } = useCollectionStore();
   const t = createTranslator(appPageMessages, locale);
+  const quoteFormT = createTranslator(quoteFormModalMessages, locale);
   const messages = getLocaleMessages(appPageMessages, locale);
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -140,7 +135,12 @@ export function AppPage() {
 
   const hasQuotes = quotes.length > 0;
   const showWelcome = hasStartedCollection === false && !hasQuotes;
-  const modalOpen = formOpen || helpOpen || resetConfirmOpen || shortcutsOpen;
+  const modalOpen =
+    formOpen ||
+    deleteConfirmOpen ||
+    helpOpen ||
+    resetConfirmOpen ||
+    shortcutsOpen;
   const hasActiveSearch = query.trim().length > 0;
   const hasNoResults = hasQuotes && filteredQuotes.length === 0;
   const showClearSearchButton = hasNoResults && hasActiveSearch;
@@ -163,13 +163,26 @@ export function AppPage() {
   }
 
   function closeForm() {
+    setDeleteConfirmOpen(false);
     setFormOpen(false);
     setEditingQuote(undefined);
+  }
+
+  function confirmDeleteQuote() {
+    if (!editingQuote) {
+      setDeleteConfirmOpen(false);
+      return;
+    }
+
+    removeQuote(editingQuote.id);
+    setDeleteConfirmOpen(false);
+    closeForm();
   }
 
   function confirmResetApp() {
     resetApp();
     setQuery("");
+    setDeleteConfirmOpen(false);
     setHelpOpen(false);
     setResetConfirmOpen(false);
     closeForm();
@@ -239,7 +252,7 @@ export function AppPage() {
   }, [formOpen]);
 
   useKeyPress("Escape", closeForm, {
-    enabled: formOpen,
+    enabled: formOpen && !deleteConfirmOpen,
     preventDefault: true,
   });
 
@@ -347,11 +360,7 @@ export function AppPage() {
               locale={locale}
               onClose={closeForm}
               onDelete={
-                editingQuote
-                  ? () => {
-                      removeQuote(editingQuote.id);
-                    }
-                  : undefined
+                editingQuote ? () => setDeleteConfirmOpen(true) : undefined
               }
               onSave={(quote) => {
                 if (editingQuote) {
@@ -362,6 +371,21 @@ export function AppPage() {
               }}
               open={formOpen}
               quote={editingQuote}
+            />
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence initial={false}>
+          {deleteConfirmOpen && editingQuote ? (
+            <ConfirmationDialog
+              cancelLabel={quoteFormT("deleteQuoteCancel")}
+              confirmLabel={quoteFormT("deleteQuoteConfirm")}
+              description={quoteFormT("deleteQuoteDescription")}
+              key="delete-confirm-dialog"
+              onCancel={() => setDeleteConfirmOpen(false)}
+              onConfirm={confirmDeleteQuote}
+              title={quoteFormT("deleteQuoteTitle")}
+              variant="destructive"
             />
           ) : null}
         </AnimatePresence>
@@ -391,11 +415,16 @@ export function AppPage() {
 
         <AnimatePresence initial={false}>
           {resetConfirmOpen ? (
-            <ResetConfirmDialog
-              locale={locale}
+            <ConfirmationDialog
+              cancelLabel={t("resetAppCancel")}
+              confirmLabel={t("resetAppConfirm")}
+              description={t("resetAppDescription")}
+              key="reset-dialog"
               onCancel={() => setResetConfirmOpen(false)}
               onConfirm={confirmResetApp}
               restoreFocusRef={dialogReturnFocusRef}
+              title={t("resetAppTitle")}
+              variant="destructive"
             />
           ) : null}
         </AnimatePresence>
@@ -1270,65 +1299,6 @@ function isPageFocus(activeElement: Element | null) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
-}
-
-type ResetConfirmDialogProps = {
-  locale: Locale;
-  onCancel: () => void;
-  onConfirm: () => void;
-  restoreFocusRef?: RefObject<HTMLElement | null>;
-};
-
-function ResetConfirmDialog({
-  locale,
-  onCancel,
-  onConfirm,
-  restoreFocusRef,
-}: ResetConfirmDialogProps) {
-  const t = createTranslator(appPageMessages, locale);
-
-  return (
-    <FullScreenDialog
-      aria-labelledby="reset-dialog-title"
-      contentClassName={styles.resetDialog}
-      onClose={onCancel}
-      restoreFocusRef={restoreFocusRef}
-    >
-      <ModalCloseButton
-        aria-label={t("cancel")}
-        onClick={onCancel}
-        title={t("cancel")}
-      />
-
-      <Text
-        as="h2"
-        className={styles.resetDialogTitle}
-        id="reset-dialog-title"
-        variant="title"
-      >
-        {t("resetAppTitle")}
-      </Text>
-
-      <div className={styles.resetDialogActions}>
-        <Button
-          icon={<SvgIcon svg={trashIcon} />}
-          onClick={onConfirm}
-          type="button"
-          variant="danger"
-        >
-          {t("resetAppConfirm")}
-        </Button>
-        <Button
-          icon={<SvgIcon svg={backArrowIcon} />}
-          onClick={onCancel}
-          type="button"
-          variant="default"
-        >
-          {t("resetAppCancel")}
-        </Button>
-      </div>
-    </FullScreenDialog>
-  );
 }
 
 type NoResultsScreenProps = {

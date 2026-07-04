@@ -80,29 +80,23 @@ button {
   border: 0;
 }
 
-button:focus-visible:not([data-suppress-focus-ring]),
-a:focus-visible:not([data-suppress-focus-ring]),
-input:focus-visible:not([data-suppress-focus-ring]),
-textarea:focus-visible:not([data-suppress-focus-ring]),
-select:focus-visible:not([data-suppress-focus-ring]),
-[role="button"]:focus-visible:not([data-suppress-focus-ring]),
-[tabindex]:not([tabindex="-1"]):focus-visible:not([data-suppress-focus-ring]) {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: var(--focus-ring-offset);
   border-radius: var(--focus-ring-radius);
 }
 
-[data-focus-ring="within"]:has(:focus-visible:not([data-suppress-focus-ring])) {
+[data-focus-ring="within"]:has(:focus-visible) {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: var(--focus-ring-offset);
   border-radius: var(--focus-ring-radius);
 }
 
-[data-focus-ring="within"] :where(input, textarea, select):focus-visible:not([data-suppress-focus-ring]) {
-  outline: 0;
-}
-
-[data-suppress-focus-ring]:focus {
+[data-focus-ring="within"] :where(input, textarea, select):focus-visible {
   outline: 0;
 }
 
