@@ -4,8 +4,9 @@
   z-index: 100;
   overflow: hidden;
   padding: var(--core-dialog-backdrop-padding-top) 0;
-  backdrop-filter: blur(44px);
-  -webkit-backdrop-filter: blur(44px);
+  background: rgb(var(--color-background-rgb) / 70%);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
 }
 
 .dialog {

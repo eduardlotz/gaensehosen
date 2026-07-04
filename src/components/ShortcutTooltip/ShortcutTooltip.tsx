@@ -44,13 +44,7 @@ export function ShortcutTooltip({
       return;
     }
 
-    const anchorElement = anchor;
-
-    function setInteractionReference(event: Event) {
-      refs.setReference(
-        event.target instanceof Element ? event.target : anchorElement,
-      );
-    }
+    refs.setReference(anchor);
 
     function updatePosition() {
       window.requestAnimationFrame(() => {
@@ -58,8 +52,7 @@ export function ShortcutTooltip({
       });
     }
 
-    function handleFocusIn(event: Event) {
-      setInteractionReference(event);
+    function handleFocusIn() {
       setOpen(true);
       updatePosition();
     }
@@ -68,33 +61,25 @@ export function ShortcutTooltip({
       setOpen(false);
     }
 
-    function handleMouseOver(event: Event) {
-      setInteractionReference(event);
+    function handleMouseEnter() {
       setOpen(true);
       updatePosition();
     }
 
-    function handleMouseOut(event: MouseEvent) {
-      if (
-        event.relatedTarget instanceof Node &&
-        anchorElement.contains(event.relatedTarget)
-      ) {
-        return;
-      }
-
+    function handleMouseLeave() {
       setOpen(false);
     }
 
-    anchorElement.addEventListener("focusin", handleFocusIn);
-    anchorElement.addEventListener("focusout", handleFocusOut);
-    anchorElement.addEventListener("mouseover", handleMouseOver);
-    anchorElement.addEventListener("mouseout", handleMouseOut);
+    anchor.addEventListener("focusin", handleFocusIn);
+    anchor.addEventListener("focusout", handleFocusOut);
+    anchor.addEventListener("mouseenter", handleMouseEnter);
+    anchor.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      anchorElement.removeEventListener("focusin", handleFocusIn);
-      anchorElement.removeEventListener("focusout", handleFocusOut);
-      anchorElement.removeEventListener("mouseover", handleMouseOver);
-      anchorElement.removeEventListener("mouseout", handleMouseOut);
+      anchor.removeEventListener("focusin", handleFocusIn);
+      anchor.removeEventListener("focusout", handleFocusOut);
+      anchor.removeEventListener("mouseenter", handleMouseEnter);
+      anchor.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, [refs, update]);
 

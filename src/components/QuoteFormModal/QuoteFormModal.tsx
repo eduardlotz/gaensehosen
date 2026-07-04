@@ -1,14 +1,6 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useAnimationControls } from "motion/react";
 import trashIcon from "../../icons/trash.svg?raw";
-import {
-  ChangeEvent,
-  FocusEvent,
-  FormEvent,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { PrimaryQuoteButton } from "../PrimaryQuoteButton";
 import { Button, SrOnly, SvgIcon, Text } from "../ui";
 import { createTranslator } from "../../i18n/translate";
@@ -16,14 +8,6 @@ import { useFocusTrap } from "../../hooks/useFocusTrap";
 import type { Locale, Quote } from "../../store/collectionStore";
 import { quoteFormModalMessages } from "./QuoteFormModal.messages";
 import styles from "./QuoteFormModal.module.css";
-
-const placeholderQuotes = [
-  { text: "What?", source: "Joe Biden" },
-  { text: "Ha ha!", source: "Nelson Muntz" },
-  { text: "Bazinga.", source: "Sheldon Cooper" },
-  { text: "Miau.", source: "Gary" },
-  { text: "Wow.", source: "Owen Wilson" },
-] as const;
 
 const inputBackgroundLayoutId = "quote-form-input-background";
 const inputBackgroundTransition = {
@@ -68,15 +52,9 @@ export function QuoteFormModal({
   const [source, setSource] = useState(() => quote?.source ?? "");
   const [activeInputBackground, setActiveInputBackground] =
     useState<ActiveInputBackground>(null);
-  const [placeholderQuote] = useState(() => {
-    if (quote) {
-      return placeholderQuotes[0];
-    }
-
-    return placeholderQuotes[
-      Math.floor(Math.random() * placeholderQuotes.length)
-    ];
-  });
+  const quoteShakeControls = useAnimationControls();
+  const quotePlaceholder = t("quoteText");
+  const sourcePlaceholder = t("source");
   const quoteInputRef = useRef<HTMLTextAreaElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const { handleKeyDown } = useFocusTrap({
@@ -93,19 +71,20 @@ export function QuoteFormModal({
     return null;
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  function saveQuote() {
     if (!text.trim()) {
+      setActiveInputBackground("text");
+      quoteInputRef.current?.focus();
+      quoteShakeControls.set({ x: 0 });
+      void quoteShakeControls.start({
+        x: [0, -7, 6, -4, 3, 0],
+        transition: { duration: 0.28, ease: "easeInOut" },
+      });
       return;
     }
 
     onSave({ text, source });
     onClose();
-  }
-
-  function deleteQuote() {
-    onDelete?.();
   }
 
   function resizeQuoteInput() {
@@ -119,18 +98,16 @@ export function QuoteFormModal({
     input.style.height = `${input.scrollHeight}px`;
   }
 
-  function updateText(event: ChangeEvent<HTMLTextAreaElement>) {
-    setText(event.target.value);
-  }
-
-  function updateSource(event: ChangeEvent<HTMLInputElement>) {
-    setSource(event.target.value);
-  }
-
-  function clearInputBackground(event: FocusEvent<HTMLElement>) {
+  function clearInputBackground({
+    currentTarget,
+    relatedTarget,
+  }: {
+    currentTarget: HTMLElement;
+    relatedTarget: EventTarget | null;
+  }) {
     if (
-      event.relatedTarget instanceof Node &&
-      event.currentTarget.contains(event.relatedTarget)
+      relatedTarget instanceof Node &&
+      currentTarget.contains(relatedTarget)
     ) {
       return;
     }
@@ -164,9 +141,18 @@ export function QuoteFormModal({
           {quote ? t("editQuote") : t("addQuote")}
         </Text>
 
-        <form className={styles.form} id={formId} onSubmit={submit}>
+        <form
+          className={styles.form}
+          id={formId}
+          noValidate
+          onSubmit={(event) => {
+            event.preventDefault();
+            saveQuote();
+          }}
+        >
           <div className={styles.inputGroup}>
-            <label
+            <motion.label
+              animate={quoteShakeControls}
               className={styles.quoteField}
               onBlur={clearInputBackground}
               onFocus={() => setActiveInputBackground("text")}
@@ -192,21 +178,20 @@ export function QuoteFormModal({
                       />
                     ) : null}
                   </AnimatePresence>
-                  {text || placeholderQuote.text}
+                  {text || quotePlaceholder}
                   <span className={styles.quoteMark}>“</span>
                 </span>
                 <textarea
                   autoFocus
                   className={styles.quoteInput}
-                  onChange={updateText}
-                  placeholder={placeholderQuote.text}
+                  onChange={(event) => setText(event.currentTarget.value)}
+                  placeholder={quotePlaceholder}
                   ref={quoteInputRef}
-                  required
                   rows={1}
                   value={text}
                 />
               </span>
-            </label>
+            </motion.label>
 
             <label
               className={styles.sourceField}
@@ -229,12 +214,12 @@ export function QuoteFormModal({
                       />
                     ) : null}
                   </AnimatePresence>
-                  {source || placeholderQuote.source}
+                  {source || sourcePlaceholder}
                 </span>
                 <input
                   className={styles.sourceInput}
-                  onChange={updateSource}
-                  placeholder={placeholderQuote.source}
+                  onChange={(event) => setSource(event.currentTarget.value)}
+                  placeholder={sourcePlaceholder}
                   type="text"
                   value={source}
                 />
@@ -256,7 +241,7 @@ export function QuoteFormModal({
             {quote && onDelete ? (
               <Button
                 icon={<SvgIcon svg={trashIcon} />}
-                onClick={deleteQuote}
+                onClick={onDelete}
                 size="big"
                 type="button"
                 variant="danger"

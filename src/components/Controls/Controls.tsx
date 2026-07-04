@@ -6,7 +6,7 @@ import threeDotsIcon from "../../icons/three-dots.svg?raw";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, type ReactNode } from "react";
 import { controlIndicatorTransition } from "../motionTransitions";
-import { useIsMobile } from "../../hooks/useIsMobile";
+import { useIsDesktop, useIsMobile } from "../../hooks/useIsMobile";
 import { createTranslator } from "../../i18n/translate";
 import type { FontSize, GridMode, Locale } from "../../store/collectionStore";
 import type { KeyboardShortcutItem } from "../../utils/keyboardShortcuts";
@@ -29,6 +29,10 @@ const gridModes = [
   icon: string;
   labelKey: ControlsTranslationKey;
 }[];
+
+function formatFontSizeLabel(fontSize: FontSize) {
+  return `${fontSize}px`;
+}
 
 export type MobileControlOptionsOpen = "grid" | "fontSize" | null;
 
@@ -57,6 +61,7 @@ export function Controls({
   onMobileOptionsOpenChange,
 }: ControlsProps) {
   const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
 
   if (isMobile) {
     return (
@@ -65,7 +70,6 @@ export function Controls({
         gridMode={gridMode}
         locale={locale}
         mobileOptionsOpen={mobileOptionsOpen}
-        shortcuts={shortcuts}
         onFontSizeChange={onFontSizeChange}
         onGridModeChange={onGridModeChange}
         onMobileOptionsOpenChange={onMobileOptionsOpenChange}
@@ -78,7 +82,7 @@ export function Controls({
       fontSize={fontSize}
       gridMode={gridMode}
       locale={locale}
-      shortcuts={shortcuts}
+      shortcuts={isDesktop ? shortcuts : undefined}
       onFontSizeChange={onFontSizeChange}
       onGridModeChange={onGridModeChange}
       onMobileOptionsOpenChange={onMobileOptionsOpenChange}
@@ -313,14 +317,14 @@ function MobileControls({
                       </button>
                     </MaybeShortcutTooltip>
                     <MaybeShortcutTooltip
-                      label={`${t("fontSize")} ${fontSize}`}
+                      label={formatFontSizeLabel(fontSize)}
                       shortcut={shortcuts?.fontSizes[fontSize]}
                     >
                       <button
                         className={styles.segment}
                         data-active="true"
                         onClick={() => onFontSizeChange(fontSize)}
-                        title={`${t("fontSize")} ${fontSize}`}
+                        title={formatFontSizeLabel(fontSize)}
                         type="button"
                       >
                         <ActiveIndicator layoutId="mobile-font-size-control-active" />
@@ -408,14 +412,14 @@ function FontSizeSegmentedControl({
         return (
           <MaybeShortcutTooltip
             key={size}
-            label={`${t("fontSize")} ${size}`}
+            label={formatFontSizeLabel(size)}
             shortcut={shortcuts?.[size]}
           >
             <button
               className={styles.segment}
               data-active={active}
               onClick={() => onFontSizeChange(size)}
-              title={`${t("fontSize")} ${size}`}
+              title={formatFontSizeLabel(size)}
               type="button"
             >
               {active ? <ActiveIndicator layoutId={layoutId} /> : null}
