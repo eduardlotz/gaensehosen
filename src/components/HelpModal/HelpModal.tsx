@@ -1,6 +1,8 @@
-import { FullScreenDialog, ModalCloseButton, Text } from "../ui";
+import type { RefObject } from "react";
+import { Text } from "../ui";
 import { createTranslator, getLocaleMessages } from "../../i18n/translate";
 import type { Locale } from "../../store/collectionStore";
+import { CoreDialog } from "../CoreDialog";
 import {
   helpModalMessages,
   type DialogText,
@@ -11,6 +13,7 @@ type HelpModalProps = {
   locale: Locale;
   open: boolean;
   onClose: () => void;
+  restoreFocusRef?: RefObject<HTMLElement | null>;
 };
 
 function renderDialogText(text: DialogText) {
@@ -37,7 +40,12 @@ function renderDialogText(text: DialogText) {
   });
 }
 
-export function HelpModal({ locale, open, onClose }: HelpModalProps) {
+export function HelpModal({
+  locale,
+  open,
+  onClose,
+  restoreFocusRef,
+}: HelpModalProps) {
   const t = createTranslator(helpModalMessages, locale);
   const messages = getLocaleMessages(helpModalMessages, locale);
 
@@ -46,46 +54,26 @@ export function HelpModal({ locale, open, onClose }: HelpModalProps) {
   }
 
   return (
-    <FullScreenDialog
-      aria-labelledby="help-dialog-title"
-      className={styles.backdrop}
-      contentClassName={styles.modal}
+    <CoreDialog
+      bodyClassName={styles.scrollContent}
+      closeLabel={t("close")}
       onClose={onClose}
+      restoreFocusRef={restoreFocusRef}
+      title={t("title")}
+      titleId="help-dialog-title"
     >
-      <div className={styles.stickyHeader}>
-        <Text
-          as="h1"
-          className={styles.title}
-          id="help-dialog-title"
-          variant="title"
-        >
-          <span className={styles.quoteMark}>„</span>
-          {t("title")}
-          <span className={styles.quoteMark}>“</span>
-        </Text>
-
-        <ModalCloseButton
-          aria-label={t("close")}
-          className={styles.closeButton}
-          onClick={onClose}
-          title={t("close")}
-        />
+      <div className={styles.items}>
+        {messages.items.map((item) => (
+          <section className={styles.item} key={item.question}>
+            <Text as="h3" className={styles.question} variant="body">
+              {item.question}
+            </Text>
+            <Text className={styles.answer} tone="muted" variant="body">
+              {renderDialogText(item.answer)}
+            </Text>
+          </section>
+        ))}
       </div>
-
-      <div className={styles.scrollContent}>
-        <div className={styles.items}>
-          {messages.items.map((item) => (
-            <section className={styles.item} key={item.question}>
-              <Text as="h3" className={styles.question} variant="body">
-                {item.question}
-              </Text>
-              <Text className={styles.answer} tone="muted" variant="body">
-                {renderDialogText(item.answer)}
-              </Text>
-            </section>
-          ))}
-        </div>
-      </div>
-    </FullScreenDialog>
+    </CoreDialog>
   );
 }

@@ -1,0 +1,85 @@
+.body {
+  display: block;
+}
+
+.shortcutsList {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 80px 0 0;
+  list-style: none;
+}
+
+.shortcutsListItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  min-height: 46px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shortcutsListItem:last-child {
+  border-bottom: 0;
+}
+
+.shortcutDescription {
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 650;
+  line-height: 1.28;
+}
+
+.inlineShortcutGroup,
+.gridShortcutGroup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  min-width: 0;
+}
+
+.shortcutColumn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 54px;
+}
+
+.shortcutValue {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .shortcutsList {
+    padding-top: 44px;
+  }
+
+  .shortcutsListItem {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+    gap: 10px;
+  }
+
+  .inlineShortcutGroup,
+  .gridShortcutGroup {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .inlineShortcutGroup,
+  .gridShortcutGroup {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+}
