@@ -3,14 +3,14 @@ import type { Locale } from "../../store/collectionStore";
 export const shortcutsDialogMessages = {
   de: {
     close: "Abbrechen",
-    fontSize: "Schriftgröße",
+    fontSize: "Zitate Schriftgröße",
     gridView: "Raster",
-    title: "Tastaturkürzel",
+    title: "Shortcuts",
   },
   en: {
     close: "Cancel",
-    fontSize: "Font size",
+    fontSize: "Quote font size",
     gridView: "Grid",
-    title: "Keyboard shortcuts",
+    title: "Shortcuts",
   },
 } as const satisfies Record<Locale, Record<string, string>>;

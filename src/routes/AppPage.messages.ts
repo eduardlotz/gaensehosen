@@ -46,8 +46,8 @@ export const appPageMessages = {
     intro:
       "Ich liebe schöne Zitate.\nDie meisten lese ich aber nie wieder.\nSie liegen immer irgendwo verteilt auf Post-Its, meiner Notiz-App und einer Menge Screenshots.\nAus diesem Grund habe ich diese Website gebaut.\n\nEin Ort für meine (und deine) Lieblingszitate.\nNicht mehr und nicht weniger.",
     jumpToQuotes: "Zu den Zitaten springen",
-    keyboardShortcut: "Tastaturkurzbefehl",
-    keyboardShortcuts: "Tastaturkürzel",
+    keyboardShortcut: "Shortcut",
+    keyboardShortcuts: "Shortcuts",
     language: "Sprache ändern",
     newQuoteShortcut: "Neues Zitat",
     noResults: "Nichts hier...",
@@ -103,8 +103,8 @@ export const appPageMessages = {
     intro:
       "I love beautiful quotes.\nMost of them I never read again.\nThey end up scattered across sticky notes, my notes app, and far too many screenshots.\nThat is why I built this site.\n\nA place for my (and your) favorite quotes.\nNothing more and nothing less.",
     jumpToQuotes: "Jump to quotes",
-    keyboardShortcut: "Keyboard shortcut",
-    keyboardShortcuts: "Keyboard shortcuts",
+    keyboardShortcut: "Shortcut",
+    keyboardShortcuts: "Shortcuts",
     language: "Change language",
     newQuoteShortcut: "Open new quote form",
     noResults: "Nothing here...",

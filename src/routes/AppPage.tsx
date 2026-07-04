@@ -486,9 +486,10 @@ function AppHeader({
   search,
 }: AppHeaderProps) {
   return (
-    <header
+    <motion.header
       className={styles.navbar}
       data-mobile-search-open={mobileSearchActive ? "true" : undefined}
+      layoutRoot
     >
       {search}
 
@@ -497,7 +498,7 @@ function AppHeader({
       </div>
 
       {controls}
-    </header>
+    </motion.header>
   );
 }
 

@@ -105,31 +105,35 @@ function DesktopControls({
 
   return (
     <>
-      <div
+      <motion.div
         className={`${styles.controlDock} ${styles.gridDock}`}
         data-control-shortcut-target="grid"
+        layoutRoot
       >
         <GridSegmentedControl
           gridMode={gridMode}
+          layoutDependency={gridMode}
           layoutId="desktop-grid-control-active"
           locale={locale}
           shortcuts={shortcuts?.gridModes}
           onGridModeChange={onGridModeChange}
         />
-      </div>
+      </motion.div>
 
-      <div
+      <motion.div
         className={`${styles.controlDock} ${styles.sizeDock}`}
         data-control-shortcut-target="fontSize"
+        layoutRoot
       >
         <FontSizeSegmentedControl
           fontSize={fontSize}
+          layoutDependency={fontSize}
           layoutId="desktop-font-size-control-active"
           locale={locale}
           shortcuts={shortcuts?.fontSizes}
           onFontSizeChange={onFontSizeChange}
         />
-      </div>
+      </motion.div>
     </>
   );
 }
@@ -191,6 +195,7 @@ function MobileControls({
                 >
                   <GridSegmentedControl
                     gridMode={gridMode}
+                    layoutDependency={gridMode}
                     layoutId="mobile-grid-control-active"
                     locale={locale}
                     shortcuts={shortcuts?.gridModes}
@@ -226,7 +231,10 @@ function MobileControls({
                         }
                         type="button"
                       >
-                        <ActiveIndicator layoutId="mobile-grid-control-active" />
+                        <ActiveIndicator
+                          layoutDependency={gridMode}
+                          layoutId="mobile-grid-control-active"
+                        />
                         <span className={styles.segmentContent}>
                           <SvgIcon
                             className={styles.icon}
@@ -284,6 +292,7 @@ function MobileControls({
                 >
                   <FontSizeSegmentedControl
                     fontSize={fontSize}
+                    layoutDependency={fontSize}
                     layoutId="mobile-font-size-control-active"
                     locale={locale}
                     shortcuts={shortcuts?.fontSizes}
@@ -327,7 +336,10 @@ function MobileControls({
                         title={formatFontSizeLabel(fontSize)}
                         type="button"
                       >
-                        <ActiveIndicator layoutId="mobile-font-size-control-active" />
+                        <ActiveIndicator
+                          layoutDependency={fontSize}
+                          layoutId="mobile-font-size-control-active"
+                        />
                         <span className={styles.segmentContent}>{fontSize}</span>
                       </button>
                     </MaybeShortcutTooltip>
@@ -344,6 +356,7 @@ function MobileControls({
 
 type GridSegmentedControlProps = {
   gridMode: GridMode;
+  layoutDependency: GridMode;
   layoutId: string;
   locale: Locale;
   shortcuts?: Record<GridMode, KeyboardShortcutItem>;
@@ -352,6 +365,7 @@ type GridSegmentedControlProps = {
 
 function GridSegmentedControl({
   gridMode,
+  layoutDependency,
   layoutId,
   locale,
   shortcuts,
@@ -376,7 +390,12 @@ function GridSegmentedControl({
               title={t(labelKey)}
               type="button"
             >
-              {active ? <ActiveIndicator layoutId={layoutId} /> : null}
+              {active ? (
+                <ActiveIndicator
+                  layoutDependency={layoutDependency}
+                  layoutId={layoutId}
+                />
+              ) : null}
               <span className={styles.segmentContent}>
                 <SvgIcon className={styles.icon} svg={icon} />
               </span>
@@ -390,6 +409,7 @@ function GridSegmentedControl({
 
 type FontSizeSegmentedControlProps = {
   fontSize: FontSize;
+  layoutDependency: FontSize;
   layoutId: string;
   locale: Locale;
   shortcuts?: Record<FontSize, KeyboardShortcutItem>;
@@ -398,6 +418,7 @@ type FontSizeSegmentedControlProps = {
 
 function FontSizeSegmentedControl({
   fontSize,
+  layoutDependency,
   layoutId,
   locale,
   shortcuts,
@@ -422,7 +443,12 @@ function FontSizeSegmentedControl({
               title={formatFontSizeLabel(size)}
               type="button"
             >
-              {active ? <ActiveIndicator layoutId={layoutId} /> : null}
+              {active ? (
+                <ActiveIndicator
+                  layoutDependency={layoutDependency}
+                  layoutId={layoutId}
+                />
+              ) : null}
               <span className={styles.segmentContent}>{size}</span>
             </button>
           </MaybeShortcutTooltip>
@@ -446,14 +472,16 @@ function SegmentedControl({ children, label }: SegmentedControlProps) {
 }
 
 type ActiveIndicatorProps = {
+  layoutDependency: FontSize | GridMode;
   layoutId: string;
 };
 
-function ActiveIndicator({ layoutId }: ActiveIndicatorProps) {
+function ActiveIndicator({ layoutDependency, layoutId }: ActiveIndicatorProps) {
   return (
     <motion.span
       aria-hidden="true"
       className={styles.activeIndicator}
+      layoutDependency={layoutDependency}
       layoutId={layoutId}
       transition={controlIndicatorTransition}
     />
