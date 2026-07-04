@@ -52,13 +52,21 @@
   opacity: 0.56;
 }
 
-.fixed {
+.fixedRoot {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 24px;
   z-index: 45;
   margin-inline: auto;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.fixed {
+  position: relative;
+  pointer-events: auto;
 }
 
 .relative {

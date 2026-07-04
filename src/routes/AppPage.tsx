@@ -34,11 +34,12 @@ import { PrimaryQuoteButton } from "../components/PrimaryQuoteButton";
 import { WelcomeSlider, type WelcomeSlide } from "../components/WelcomeSlider";
 import { ShortcutsDialog } from "../components/ShortcutsDialog";
 import { ConfirmationDialog } from "../components/CoreDialog";
-import { Button, Page, Section, SvgIcon, Text } from "../components/ui";
+import { Button, Page, Section, SrOnly, SvgIcon, Text } from "../components/ui";
 import { QuoteFormModal } from "../components/QuoteFormModal";
 import { quoteFormModalMessages } from "../components/QuoteFormModal/QuoteFormModal.messages";
 import { createTranslator, getLocaleMessages } from "../i18n/translate";
-import { useIsMobile } from "../hooks/useIsMobile";
+import { useBodyScrollLock } from "../hooks/useBodyScrollLock";
+import { useIsDesktop, useIsMobile } from "../hooks/useIsMobile";
 import { useKeyPress } from "../hooks/useKeyPress";
 import { useOutsideClick } from "../hooks/useOutsideClick";
 import { useCollectionStore } from "../store/collectionStore";
@@ -61,6 +62,14 @@ const quoteFormId = "quote-form";
 const quoteResultsId = "quote-results";
 type FormMode = "closed" | "add" | "edit";
 type QuoteNavigationDirection = "down" | "left" | "right" | "up";
+type OptionsAction = {
+  id: string;
+  icon: string;
+  label: string;
+  danger?: boolean;
+  inlineOnDesktop?: boolean;
+  onSelect: (returnFocusElement?: HTMLElement | null) => void;
+};
 
 function downloadQuotesCsv(quotes: Quote[]) {
   const blob = new Blob([serializeQuotesCsv(quotes)], {
@@ -96,6 +105,7 @@ export function AppPage() {
   const t = createTranslator(appPageMessages, locale);
   const quoteFormT = createTranslator(quoteFormModalMessages, locale);
   const messages = getLocaleMessages(appPageMessages, locale);
+  const isDesktop = useIsDesktop();
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -234,22 +244,13 @@ export function AppPage() {
     onOutsideClick: () => setMobileOptionsOpen(null),
   });
 
+  useBodyScrollLock(formOpen);
+
   useEffect(() => {
-    if (!formOpen) {
-      return;
+    if (!isDesktop) {
+      setShortcutsOpen(false);
     }
-
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-    };
-  }, [formOpen]);
+  }, [isDesktop]);
 
   useKeyPress("Escape", closeForm, {
     enabled: formOpen && !deleteConfirmOpen,
@@ -403,7 +404,7 @@ export function AppPage() {
         </AnimatePresence>
 
         <AnimatePresence initial={false}>
-          {shortcutsOpen ? (
+          {shortcutsOpen && isDesktop ? (
             <ShortcutsDialog
               key="shortcuts-dialog"
               locale={locale}
@@ -485,9 +486,10 @@ function AppHeader({
   search,
 }: AppHeaderProps) {
   return (
-    <header
+    <motion.header
       className={styles.navbar}
       data-mobile-search-open={mobileSearchActive ? "true" : undefined}
+      layoutRoot
     >
       {search}
 
@@ -496,7 +498,7 @@ function AppHeader({
       </div>
 
       {controls}
-    </header>
+    </motion.header>
   );
 }
 
@@ -526,6 +528,7 @@ function CollectionApp({
 }: CollectionAppProps) {
   const t = createTranslator(appPageMessages, locale);
   const hasNoResults = filteredQuotes.length === 0;
+  const isDesktop = useIsDesktop();
   const isMobile = useIsMobile();
   const [actionMenuPointerActive, setActionMenuPointerActive] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -535,6 +538,9 @@ function CollectionApp({
   const shortcuts = getKeyboardShortcutItems(locale);
   const platformModifierKey = getPlatformModifierKey();
   const focusSearchShortcut = shortcuts.focusSearch;
+  const searchAriaLabel = isDesktop
+    ? `${t("search")}. ${t("keyboardShortcut")}: ${focusSearchShortcut.keysText}.`
+    : t("search");
 
   function focusSearch() {
     onMobileOptionsOpenChange(null);
@@ -662,6 +668,62 @@ function CollectionApp({
     });
   }
 
+  const optionsActions: OptionsAction[] = [
+    {
+      id: "help",
+      icon: questionCircleIcon,
+      inlineOnDesktop: true,
+      label: t("help"),
+      onSelect: onHelpClick,
+    },
+    ...(isDesktop
+      ? [
+          {
+            id: "shortcuts",
+            icon: shortcutKeyIcon,
+            inlineOnDesktop: true,
+            label: t("keyboardShortcuts"),
+            onSelect: onShortcutsClick,
+          },
+        ]
+      : []),
+    {
+      id: "language",
+      icon: globeIcon,
+      label: t("language"),
+      onSelect: () => onLocaleChange(locale === "en" ? "de" : "en"),
+    },
+    {
+      id: "theme",
+      icon: theme === "light" ? moonIcon : sunIcon,
+      inlineOnDesktop: true,
+      label: t("theme"),
+      onSelect: () => onThemeChange(theme === "light" ? "dark" : "light"),
+    },
+    {
+      id: "export",
+      icon: exportIcon,
+      label: t("exportCsv"),
+      onSelect: onExportClick,
+    },
+    {
+      id: "import",
+      icon: fileIcon,
+      label: t("importCsv"),
+      onSelect: onImportClick,
+    },
+    {
+      id: "reset",
+      danger: true,
+      icon: trashIcon,
+      label: t("resetApp"),
+      onSelect: onResetClick,
+    },
+  ];
+  const inlineOptionsActions = optionsActions.filter(
+    (action) => action.inlineOnDesktop,
+  );
+
   return (
     <>
       <a
@@ -684,7 +746,7 @@ function CollectionApp({
           >
             <SvgIcon className={styles.searchIcon} svg={searchIcon} />
             <input
-              aria-label={`${t("search")}. ${t("keyboardShortcut")}: ${focusSearchShortcut.keysText}.`}
+              aria-label={searchAriaLabel}
               className={styles.searchInput}
               onChange={handleSearchChange}
               onFocus={openMobileSearch}
@@ -693,7 +755,7 @@ function CollectionApp({
               type="search"
               value={query}
             />
-            {!query ? (
+            {isDesktop && !query ? (
               <KeyboardShortcutKeys
                 className={styles.searchShortcutMarker}
                 decorative
@@ -722,6 +784,25 @@ function CollectionApp({
         }
         controls={
           <div className={styles.navControls}>
+            <div
+              aria-label={t("options")}
+              className={styles.inlineActionButtons}
+              role="group"
+            >
+              {inlineOptionsActions.map((action) => (
+                <button
+                  aria-label={action.label}
+                  className={styles.inlineActionButton}
+                  data-tooltip={action.label}
+                  key={action.id}
+                  onClick={(event) => action.onSelect(event.currentTarget)}
+                  type="button"
+                >
+                  <SvgIcon className={styles.buttonIcon} svg={action.icon} />
+                  <SrOnly>{action.label}</SrOnly>
+                </button>
+              ))}
+            </div>
             <Menu.Root modal={false}>
               <Menu.Trigger
                 className={styles.optionsButton}
@@ -746,70 +827,26 @@ function CollectionApp({
                     onKeyDown={() => setActionMenuPointerActive(false)}
                     onPointerMove={() => setActionMenuPointerActive(true)}
                   >
-                    <Menu.Item
-                      className={styles.actionMenuItem}
-                      onClick={() => onHelpClick(optionsButtonRef.current)}
-                    >
-                      <SvgIcon
-                        className={styles.buttonIcon}
-                        svg={questionCircleIcon}
-                      />
-                      <span>{t("help")}</span>
-                    </Menu.Item>
-                    <Menu.Item
-                      className={styles.actionMenuItem}
-                      onClick={() => onShortcutsClick(optionsButtonRef.current)}
-                    >
-                      <SvgIcon
-                        className={styles.buttonIcon}
-                        svg={shortcutKeyIcon}
-                      />
-                      <span>{t("keyboardShortcuts")}</span>
-                    </Menu.Item>
-                    <Menu.Item
-                      className={styles.actionMenuItem}
-                      onClick={() =>
-                        onLocaleChange(locale === "en" ? "de" : "en")
-                      }
-                    >
-                      <SvgIcon className={styles.buttonIcon} svg={globeIcon} />
-                      <span>{t("language")}</span>
-                    </Menu.Item>
-                    <Menu.Item
-                      className={styles.actionMenuItem}
-                      onClick={() =>
-                        onThemeChange(theme === "light" ? "dark" : "light")
-                      }
-                    >
-                      <SvgIcon
-                        className={styles.buttonIcon}
-                        svg={theme === "light" ? moonIcon : sunIcon}
-                      />
-                      <span>{t("theme")}</span>
-                    </Menu.Item>
-
-                    <Menu.Item
-                      className={styles.actionMenuItem}
-                      onClick={onExportClick}
-                    >
-                      <SvgIcon className={styles.buttonIcon} svg={exportIcon} />
-                      <span>{t("exportCsv")}</span>
-                    </Menu.Item>
-                    <Menu.Item
-                      className={styles.actionMenuItem}
-                      onClick={onImportClick}
-                    >
-                      <SvgIcon className={styles.buttonIcon} svg={fileIcon} />
-                      <span>{t("importCsv")}</span>
-                    </Menu.Item>
-
-                    <Menu.Item
-                      className={`${styles.actionMenuItem} ${styles.actionMenuItemDanger}`}
-                      onClick={() => onResetClick(optionsButtonRef.current)}
-                    >
-                      <SvgIcon className={styles.buttonIcon} svg={trashIcon} />
-                      <span>{t("resetApp")}</span>
-                    </Menu.Item>
+                    {optionsActions.map((action) => (
+                      <Menu.Item
+                        className={`${styles.actionMenuItem} ${
+                          action.danger ? styles.actionMenuItemDanger : ""
+                        }`}
+                        data-inline-desktop={
+                          action.inlineOnDesktop ? "true" : undefined
+                        }
+                        key={action.id}
+                        onClick={() =>
+                          action.onSelect(optionsButtonRef.current)
+                        }
+                      >
+                        <SvgIcon
+                          className={styles.buttonIcon}
+                          svg={action.icon}
+                        />
+                        <span>{action.label}</span>
+                      </Menu.Item>
+                    ))}
                   </Menu.Popup>
                 </Menu.Positioner>
               </Menu.Portal>
@@ -823,10 +860,14 @@ function CollectionApp({
         gridMode={gridMode}
         locale={locale}
         mobileOptionsOpen={mobileOptionsOpen}
-        shortcuts={{
-          fontSizes: shortcuts.fontSizes,
-          gridModes: shortcuts.gridModes,
-        }}
+        shortcuts={
+          isDesktop
+            ? {
+                fontSizes: shortcuts.fontSizes,
+                gridModes: shortcuts.gridModes,
+              }
+            : undefined
+        }
         onFontSizeChange={onFontSizeChange}
         onGridModeChange={onGridModeChange}
         onMobileOptionsOpenChange={onMobileOptionsOpenChange}

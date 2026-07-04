@@ -6,9 +6,10 @@ import type {
   ReactNode,
   RefObject,
 } from "react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { createPortal } from "react-dom";
 import arrowIcon from "../../../icons/back-arrow.svg?raw";
+import { useBodyScrollLock } from "../../../hooks/useBodyScrollLock";
 import { useFocusTrap } from "../../../hooks/useFocusTrap";
 import { IconButton } from "../Button";
 import { classNames } from "../classNames";
@@ -52,18 +53,7 @@ export function FullScreenDialog({
     restoreFocusRef,
   });
 
-  useEffect(() => {
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-    };
-  }, []);
+  useBodyScrollLock();
 
   return createPortal(
     <motion.div

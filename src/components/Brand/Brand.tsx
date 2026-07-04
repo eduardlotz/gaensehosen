@@ -247,7 +247,6 @@ export function Brand({ locale }: BrandProps) {
       className={styles.brand}
       data-hydrated={hasHydrated ? "true" : "false"}
       disabled={!hasHydrated}
-      layout
       onClick={() =>
         setLogoVariant(logoVariant === "wordmark" ? "alternate" : "wordmark")
       }
@@ -257,12 +256,13 @@ export function Brand({ locale }: BrandProps) {
       }}
       type="button"
     >
-      <AnimatePresence initial={false} mode="popLayout">
+      <AnimatePresence initial={false} mode="wait">
         <motion.span
           {...logoAnimation}
           className={styles.logoMotion}
           key={logoVariant}
           layout
+          layoutDependency={logoVariant}
           transition={logoContentTransition}
         >
           {logoVariant === "wordmark" ? <CurrentLogo /> : <AlternateLogo />}

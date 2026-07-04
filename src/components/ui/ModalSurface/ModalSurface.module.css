@@ -5,9 +5,9 @@
   display: block;
   padding: 20px 24px 80px;
   overflow-y: auto;
-  background: transparent;
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  background: rgb(var(--color-background-rgb) / 70%);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;

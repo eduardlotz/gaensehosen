@@ -105,7 +105,7 @@ export function PrimaryQuoteButton({
     ...(textSize === undefined ? {} : { fontSize: textSize }),
   };
 
-  return (
+  const button = (
     <motion.button
       aria-label={buttonConfig.ariaLabel}
       className={classNames(
@@ -115,6 +115,7 @@ export function PrimaryQuoteButton({
         className,
       )}
       data-kind={state.kind}
+      layoutDependency={`${state.position}-${state.kind}`}
       layoutId={primaryButtonLayoutId}
       onClick={buttonConfig.onClick}
       style={buttonStyle}
@@ -140,6 +141,7 @@ export function PrimaryQuoteButton({
       <motion.span
         className={styles.contentSlot}
         layout="position"
+        layoutDependency={state.kind}
         transition={primaryButtonTransition}
       >
         <AnimatePresence mode="popLayout" initial={false}>
@@ -173,4 +175,10 @@ export function PrimaryQuoteButton({
       </motion.span>
     </motion.button>
   );
+
+  if (state.position !== "fixed") {
+    return button;
+  }
+
+  return <div className={styles.fixedRoot}>{button}</div>;
 }

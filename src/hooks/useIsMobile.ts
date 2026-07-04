@@ -1,30 +1,39 @@
 import { useEffect, useState } from "react";
 
 const mobileQuery = "(max-width: 620px)";
+const desktopQuery = "(min-width: 901px)";
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => {
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => {
     if (typeof window === "undefined") {
       return false;
     }
 
-    return window.matchMedia(mobileQuery).matches;
+    return window.matchMedia(query).matches;
   });
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(mobileQuery);
+    const mediaQuery = window.matchMedia(query);
 
-    function updateIsMobile() {
-      setIsMobile(mediaQuery.matches);
+    function updateMatches() {
+      setMatches(mediaQuery.matches);
     }
 
-    updateIsMobile();
-    mediaQuery.addEventListener("change", updateIsMobile);
+    updateMatches();
+    mediaQuery.addEventListener("change", updateMatches);
 
     return () => {
-      mediaQuery.removeEventListener("change", updateIsMobile);
+      mediaQuery.removeEventListener("change", updateMatches);
     };
-  }, []);
+  }, [query]);
 
-  return isMobile;
+  return matches;
+}
+
+export function useIsMobile() {
+  return useMediaQuery(mobileQuery);
+}
+
+export function useIsDesktop() {
+  return useMediaQuery(desktopQuery);
 }
