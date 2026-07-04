@@ -293,7 +293,7 @@
   letter-spacing: -2%;
   white-space: pre-line;
   overflow-wrap: break-word;
-  text-wrap: pretty;
+  text-wrap: balance;
 }
 
 .quoteGrid[data-grid="grid"] .quoteText {
