@@ -203,20 +203,20 @@
   column-gap: var(--quote-grid-column-gap);
   padding-inline-start: calc(var(--quote-font-size) * 0.72);
   transition:
-    filter 250ms ease-out,
-    opacity 250ms ease-out,
+    filter 150ms cubic-bezier(0.2, 0.8, 0.2, 0.8),
+    opacity 150ms cubic-bezier(0.2, 0.8, 0.2, 0.8),
     transform 250ms cubic-bezier(0.2, 0.8, 0.2, 0.8);
 }
 
 .quoteGrid[data-form-active="true"] {
   filter: blur(22px);
   opacity: 0.12;
-  transform: scale(0.95);
+  transform: scaleX(1.02);
   pointer-events: none;
 }
 
 .quoteGrid[data-form-active="true"][data-form-mode="edit"] {
-  transform: scale(0.95);
+  transform: scaleX(1.02);
 }
 
 .quoteGrid[data-grid="grid"] {
@@ -327,20 +327,20 @@
   margin: 16px auto 0;
   scroll-margin-top: 112px;
   transition:
-    filter 250ms ease-out,
-    opacity 250ms ease-out,
+    filter 150ms cubic-bezier(0.2, 0.8, 0.2, 0.8),
+    opacity 150ms cubic-bezier(0.2, 0.8, 0.2, 0.8),
     transform 250ms cubic-bezier(0.2, 0.8, 0.2, 0.8);
 }
 
 .noResultsScreen[data-form-active="true"] {
   filter: blur(16px);
   opacity: 0.2;
-  transform: scale(0.95);
+  transform: scaleX(0.95);
   pointer-events: none;
 }
 
 .noResultsScreen[data-form-active="true"][data-form-mode="edit"] {
-  transform: scale(0.95);
+  transform: scaleX(0.9);
 }
 
 .noResultsText {
@@ -373,15 +373,15 @@
   max-width: 780px;
   margin: 132px auto 0;
   transition:
-    filter 360ms ease,
-    opacity 360ms ease,
-    transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    filter 150ms cubic-bezier(0.2, 0.8, 0.2, 0.8),
+    opacity 150ms cubic-bezier(0.2, 0.8, 0.2, 0.8),
+    transform 250ms cubic-bezier(0.2, 0.8, 0.2, 0.8);
 }
 
 .emptyContent[data-form-active="true"] {
-  filter: blur(18px);
+  filter: blur(22px);
   opacity: 0.1;
-  transform: translateY(20px) scale(0.9);
+  transform: scaleX(1.02);
   pointer-events: none;
 }
 
@@ -880,14 +880,14 @@
 }
 
 .focusListShell[data-form-active="true"] {
-  filter: blur(14px);
-  opacity: 0.18;
-  transform: translateY(72px) scale(0.95);
+  filter: blur(22px);
+  opacity: 0.12;
+  transform: scaleX(1.02);
   pointer-events: none;
 }
 
 .focusListShell[data-form-active="true"][data-form-mode="edit"] {
-  transform: translateY(92px) scale(0.93);
+  transform: scaleX(1.02);
 }
 
 .focusList {

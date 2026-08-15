@@ -35,8 +35,8 @@ export function FloatingQuoteUtilityButton({
     state.kind === "closeControls"
       ? {
           animate: { opacity: 1, scale: 1 },
-          exit: { opacity: 0, scale: 0.86 },
-          initial: { opacity: 0, scale: 0.42 },
+          exit: { opacity: 0, scale: 0.9 },
+          initial: { opacity: 0, scale: 0.9 },
           transition: {
             opacity: { duration: 0.12 },
             scale: {
