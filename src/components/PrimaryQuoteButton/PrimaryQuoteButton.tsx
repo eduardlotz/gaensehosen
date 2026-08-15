@@ -26,20 +26,20 @@ type PrimaryQuoteButtonProps = Omit<
 };
 
 const contentTransition = {
-  duration: 0.14,
+  duration: 0.25,
   ease: [0.2, 0.8, 0.2, 1],
 } as const;
 
 const iconContentAnimation = {
-  initial: { opacity: 0, filter: "blur(7px)", rotate: -45, scale: 0.92, y: 2 },
-  animate: { opacity: 1, filter: "blur(0px)", rotate: 0, scale: 1, y: 0 },
-  exit: { opacity: 0, filter: "blur(7px)", rotate: 45, scale: 0.92, y: -2 },
+  initial: { opacity: 0, filter: "blur(4px)", scale: 1.05, y: "10%" },
+  animate: { opacity: 1, filter: "blur(0px)", scale: 1, y: 0 },
+  exit: { opacity: 0, filter: "blur(4px)", scale: 0.95, y: "-10%" },
 } as const;
 
 const textContentAnimation = {
-  initial: { opacity: 0, filter: "blur(7px)", scale: 0.98, y: 3 },
+  initial: { opacity: 0, filter: "blur(7px)", scale: 0.95, y: "-10%" },
   animate: { opacity: 1, filter: "blur(0px)", scale: 1, y: 0 },
-  exit: { opacity: 0, filter: "blur(7px)", scale: 0.98, y: -3 },
+  exit: { opacity: 0, filter: "blur(7px)", scale: 1.05, y: "10%" },
 } as const;
 
 type ButtonLayoutStyle = Pick<
@@ -116,7 +116,7 @@ export function PrimaryQuoteButton({
       )}
       data-kind={state.kind}
       layoutDependency={`${state.position}-${state.kind}`}
-      layoutId={primaryButtonLayoutId}
+      // layoutId={primaryButtonLayoutId}
       onClick={buttonConfig.onClick}
       style={buttonStyle}
       title={buttonConfig.title}
@@ -140,11 +140,12 @@ export function PrimaryQuoteButton({
     >
       <motion.span
         className={styles.contentSlot}
-        layout="position"
+        layout
+        layoutAnchor={{ x: 0.5, y: 0.5 }}
         layoutDependency={state.kind}
         transition={primaryButtonTransition}
       >
-        <AnimatePresence mode="popLayout" initial={false}>
+        <AnimatePresence mode="popLayout">
           {match(state)
             .with({ kind: "add" }, () => (
               <motion.span
