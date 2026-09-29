@@ -389,6 +389,7 @@ export function AppPage() {
               key="quote-share-dialog"
               locale={locale}
               quote={selectedQuote}
+              theme={theme}
               onClose={() => setShareOpen(false)}
             />
           ) : null}

@@ -16,16 +16,29 @@ export type PosterAlignment =
   | "topLeft" | "topCenter" | "topRight"
   | "middleLeft" | "middleCenter" | "middleRight"
   | "bottomLeft" | "bottomCenter" | "bottomRight";
+export type PosterMargin = "small" | "medium" | "large";
 export type PosterOptions = {
   format: PosterFormat;
   fontSize: number;
   dark: boolean;
   logo: boolean;
   alignment: PosterAlignment;
+  margin: PosterMargin;
 };
 
 export function posterDimensions(format: PosterFormat) {
   return posterFormats[format];
+}
+
+export function posterFilename(source: string) {
+  const name = source.trim().normalize("NFKD")
+    .replace(/ß/g, "ss")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80)
+    .replace(/-$/g, "") || "quote";
+  return `${name}-gaensehosen.png`;
 }
 
 const logoImages = new Map<string, Promise<HTMLImageElement>>();
@@ -97,16 +110,18 @@ export async function renderQuotePoster(
   context.fillStyle = options.dark ? "#10100f" : "#ffffff";
   context.fillRect(0, 0, width, height);
 
-  const padding = 76 * unit;
-  const contentWidth = width - 2 * padding;
   const quoteSize = options.fontSize * 3.25 * unit;
+  context.font = `500 ${quoteSize}px "Open Sauce Two"`;
+  const quoteMarkWidth = context.measureText("„").width;
+  const selectedPadding = { small: 52, medium: 76, large: 108 }[options.margin] * unit;
+  const padding = Math.max(selectedPadding, quoteMarkWidth + 24 * unit);
+  const contentWidth = width - 2 * padding;
   const sourceSize = quoteSize * 0.95;
   const quoteLeading = quoteSize * 1.12;
   const sourceLeading = sourceSize * 1.12;
   const sourceGap = quote.source.trim() ? quoteSize * 0.36 : 0;
   const quoteText = quote.text.trim();
 
-  context.font = `500 ${quoteSize}px "Open Sauce Two"`;
   const quoteLines = wrapPosterText(context, `${quoteText}“`, contentWidth);
   context.font = `500 ${sourceSize}px "Open Sauce Two"`;
   const sourceLines = quote.source.trim()
@@ -139,7 +154,7 @@ export async function renderQuotePoster(
     const x = lineX(line);
     if (index === 0) {
       context.fillStyle = accent;
-      context.fillText("„", x - context.measureText("„").width, y);
+      context.fillText("„", x - quoteMarkWidth, y);
     }
     context.fillStyle = options.dark ? "#f7f6f2" : "#090909";
     context.fillText(body, x, y);

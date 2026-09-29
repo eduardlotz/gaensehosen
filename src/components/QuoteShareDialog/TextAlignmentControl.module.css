@@ -35,10 +35,15 @@
 .choice:disabled { cursor: not-allowed; }
 
 .icon {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.45;
-  stroke-linecap: round;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.icon svg { display: block; width: 16px; height: 16px; }
+
+:global(.themeDark) .root { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.045); }
+
+:global(.themeDark) .choice[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
 }

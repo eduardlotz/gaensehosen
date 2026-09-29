@@ -1,35 +1,27 @@
 import type { PosterAlignment } from "./quotePoster";
+import { SvgIcon } from "../ui";
+import topLeftIcon from "../../icons/topleft.svg?raw";
+import topCenterIcon from "../../icons/topcenter.svg?raw";
+import topRightIcon from "../../icons/topright.svg?raw";
+import middleLeftIcon from "../../icons/leftcenter.svg?raw";
+import middleCenterIcon from "../../icons/centercenter.svg?raw";
+import middleRightIcon from "../../icons/rightcenter.svg?raw";
+import bottomLeftIcon from "../../icons/bottomleft.svg?raw";
+import bottomCenterIcon from "../../icons/bottomcenter.svg?raw";
+import bottomRightIcon from "../../icons/bottomright.svg?raw";
 import styles from "./TextAlignmentControl.module.css";
 
-const choices: { value: PosterAlignment; icon: "topLeft" | "topCenter" | "topRight" | "middleLeft" | "middleCenter"; flip?: string }[] = [
-  { value: "topLeft", icon: "topLeft" },
-  { value: "topCenter", icon: "topCenter" },
-  { value: "topRight", icon: "topRight" },
-  { value: "middleLeft", icon: "middleLeft" },
-  { value: "middleCenter", icon: "middleCenter" },
-  { value: "middleRight", icon: "middleLeft", flip: "scaleX(-1)" },
-  { value: "bottomLeft", icon: "topLeft", flip: "scaleY(-1)" },
-  { value: "bottomCenter", icon: "topCenter", flip: "scaleY(-1)" },
-  { value: "bottomRight", icon: "topRight", flip: "scaleY(-1)" },
+const choices: { value: PosterAlignment; icon: string }[] = [
+  { value: "topLeft", icon: topLeftIcon },
+  { value: "topCenter", icon: topCenterIcon },
+  { value: "topRight", icon: topRightIcon },
+  { value: "middleLeft", icon: middleLeftIcon },
+  { value: "middleCenter", icon: middleCenterIcon },
+  { value: "middleRight", icon: middleRightIcon },
+  { value: "bottomLeft", icon: bottomLeftIcon },
+  { value: "bottomCenter", icon: bottomCenterIcon },
+  { value: "bottomRight", icon: bottomRightIcon },
 ];
-
-const strokes = {
-  topLeft: [[4, 5, 18], [4, 9, 13], [4, 13, 10]],
-  topCenter: [[3, 5, 21], [6, 9, 18], [8, 13, 16]],
-  topRight: [[6, 5, 20], [11, 9, 20], [14, 13, 20]],
-  middleLeft: [[4, 8, 18], [4, 12, 13], [4, 16, 10]],
-  middleCenter: [[3, 8, 21], [6, 12, 18], [8, 16, 16]],
-} as const;
-
-function AlignmentIcon({ name, flip }: { name: keyof typeof strokes; flip?: string }) {
-  return (
-    <svg aria-hidden="true" className={styles.icon} style={{ transform: flip }} viewBox="0 0 24 24">
-      {strokes[name].map(([x1, y, x2], index) => (
-        <line key={index} x1={x1} x2={x2} y1={y} y2={y} />
-      ))}
-    </svg>
-  );
-}
 
 export function TextAlignmentControl({
   value,
@@ -46,7 +38,7 @@ export function TextAlignmentControl({
 }) {
   return (
     <div aria-label={label} className={styles.root} role="group">
-      {choices.map(({ value: choice, icon, flip }) => (
+      {choices.map(({ value: choice, icon }) => (
         <button
           aria-label={labels[choice]}
           aria-pressed={value === choice}
@@ -57,7 +49,7 @@ export function TextAlignmentControl({
           title={labels[choice]}
           type="button"
         >
-          <AlignmentIcon flip={flip} name={icon} />
+          <SvgIcon className={styles.icon} svg={icon.replaceAll('#292D32', 'currentColor')} />
         </button>
       ))}
     </div>

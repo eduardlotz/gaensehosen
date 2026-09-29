@@ -1,34 +1,49 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import sunIcon from "../../icons/sun.svg?raw";
 import moonIcon from "../../icons/moon.svg?raw";
-import type { Locale, Quote } from "../../store/collectionStore";
+import type { Locale, Quote, ThemeName } from "../../store/collectionStore";
 import { createTranslator } from "../../i18n/translate";
 import {
-  Button, FullScreenDialog, ModalCloseButton, OptionMenu, RangeSlider,
-  SegmentedControl, SvgIcon, Text,
+  FullScreenDialog,
+  ModalCloseButton,
+  MotionButton,
+  OptionMenu,
+  RangeSlider,
+  SegmentedControl,
+  SvgIcon,
+  Text,
 } from "../ui";
 import { quoteShareMessages } from "./QuoteShareDialog.messages";
 import {
   downloadPoster,
+  posterFilename,
   posterDimensions,
   posterFormats,
   renderQuotePoster,
   type PosterFormat,
   type PosterAlignment,
   type PosterOptions,
+  type PosterMargin,
 } from "./quotePoster";
 import { TextAlignmentControl } from "./TextAlignmentControl";
 import styles from "./QuoteShareDialog.module.css";
 
 const formats: PosterFormat[] = [
-  "a2", "a3", "a4", "ratio4x5", "ratio1x1", "ratio16x9", "ratio9x16",
+  "a2",
+  // "a3", "a4",
+  "ratio4x5",
+  "ratio1x1",
+  "ratio16x9",
+  "ratio9x16",
 ];
 const defaultOptions: PosterOptions = {
-  format: "a2",
-  fontSize: 16,
+  format: "ratio4x5",
+  fontSize: 24,
   dark: false,
-  logo: false,
-  alignment: "bottomLeft",
+  logo: true,
+  alignment: "topLeft",
+  margin: "medium",
 };
 
 function PosterPreview({
@@ -56,8 +71,11 @@ function PosterPreview({
     const updateSize = () => {
       const width = stage.clientWidth;
       const height = stage.clientHeight;
-      setStageSize((current) => current.width === width && current.height === height
-        ? current : { width, height });
+      setStageSize((current) =>
+        current.width === width && current.height === height
+          ? current
+          : { width, height },
+      );
     };
     updateSize();
     const observer = new ResizeObserver(updateSize);
@@ -81,27 +99,33 @@ function PosterPreview({
         stageSize.width / dimensions.width,
         stageSize.height / dimensions.height,
       );
-      const previewWidth = Math.max(1, Math.round(dimensions.width * scale * 2));
+      const previewWidth = Math.max(
+        1,
+        Math.round(dimensions.width * scale * 2),
+      );
       void renderQuotePoster(canvas, quote, options, previewWidth)
-      .then(() => {
-        const target = canvasRef.current;
-        if (cancelled || !target) return;
-        target.width = canvas.width;
-        target.height = canvas.height;
-        target.getContext("2d")?.drawImage(canvas, 0, 0);
-        setRenderedOptions(options);
-        onReady(true);
-      })
-      .catch((reason: unknown) => {
-        if (!cancelled) {
-          setError(reason instanceof Error ? reason.message : "render-error");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+        .then(() => {
+          const target = canvasRef.current;
+          if (cancelled || !target) return;
+          target.width = canvas.width;
+          target.height = canvas.height;
+          target.getContext("2d")?.drawImage(canvas, 0, 0);
+          setRenderedOptions(options);
+          onReady(true);
+        })
+        .catch((reason: unknown) => {
+          if (!cancelled) {
+            setError(reason instanceof Error ? reason.message : "render-error");
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
     }, 80);
-    return () => { cancelled = true; clearTimeout(timer); };
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [quote, options, stageSize, onReady]);
 
   const visibleOptions = error ? options : renderedOptions;
@@ -142,28 +166,38 @@ function PosterPreview({
 export function QuoteShareDialog({
   locale,
   quote,
+  theme,
   onClose,
 }: {
   locale: Locale;
   quote: Quote;
+  theme: ThemeName;
   onClose: () => void;
 }) {
   const t = createTranslator(quoteShareMessages, locale);
   const titleId = useId();
   const menuPortalRef = useRef<HTMLDivElement>(null);
-  const [options, setOptions] = useState<PosterOptions>(defaultOptions);
+  const [options, setOptions] = useState<PosterOptions>(() => ({
+    ...defaultOptions,
+    dark: theme === "dark",
+  }));
   const [previewReady, setPreviewReady] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<"exportError" | "tooLong" | null>(null);
   const [downloaded, setDownloaded] = useState(false);
   const mounted = useRef(true);
+  const resetDownloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     mounted.current = true;
-    return () => { mounted.current = false; };
+    return () => {
+      mounted.current = false;
+      if (resetDownloadTimer.current) clearTimeout(resetDownloadTimer.current);
+    };
   }, []);
 
   function changeOptions(change: Partial<PosterOptions>) {
+    if (resetDownloadTimer.current) clearTimeout(resetDownloadTimer.current);
     setPreviewReady(false);
     setOptions((current) => ({ ...current, ...change }));
     setError(null);
@@ -172,19 +206,28 @@ export function QuoteShareDialog({
 
   async function exportQuote() {
     if (exporting || !previewReady) return;
+    if (resetDownloadTimer.current) clearTimeout(resetDownloadTimer.current);
     setExporting(true);
     setError(null);
     setDownloaded(false);
     try {
       const canvas = document.createElement("canvas");
       await renderQuotePoster(canvas, quote, options);
-      await downloadPoster(canvas, `gaensehosen-${options.format}.png`);
-      if (mounted.current) setDownloaded(true);
+      await downloadPoster(canvas, posterFilename(quote.source));
+      if (mounted.current) {
+        setDownloaded(true);
+        resetDownloadTimer.current = setTimeout(() => {
+          setDownloaded(false);
+          resetDownloadTimer.current = null;
+        }, 2600);
+      }
     } catch (reason) {
       if (mounted.current) {
-        setError(reason instanceof Error && reason.message === "quote-too-long"
-          ? "tooLong"
-          : "exportError");
+        setError(
+          reason instanceof Error && reason.message === "quote-too-long"
+            ? "tooLong"
+            : "exportError",
+        );
       }
     } finally {
       if (mounted.current) setExporting(false);
@@ -195,17 +238,26 @@ export function QuoteShareDialog({
     const { width, height } = posterFormats[format];
     return (
       <>
-        <span>{width} × {height}</span>
+        <span>
+          {width} × {height}
+        </span>
         <span className={styles.formatName}>{t(format)}</span>
       </>
     );
   }
 
   const alignmentLabels = {
-    topLeft: t("topLeft"), topCenter: t("topCenter"), topRight: t("topRight"),
-    middleLeft: t("middleLeft"), middleCenter: t("middleCenter"), middleRight: t("middleRight"),
-    bottomLeft: t("bottomLeft"), bottomCenter: t("bottomCenter"), bottomRight: t("bottomRight"),
+    topLeft: t("topLeft"),
+    topCenter: t("topCenter"),
+    topRight: t("topRight"),
+    middleLeft: t("middleLeft"),
+    middleCenter: t("middleCenter"),
+    middleRight: t("middleRight"),
+    bottomLeft: t("bottomLeft"),
+    bottomCenter: t("bottomCenter"),
+    bottomRight: t("bottomRight"),
   } satisfies Record<PosterAlignment, string>;
+  const downloadState = exporting ? "loading" : downloaded ? "success" : "idle";
 
   return (
     <FullScreenDialog
@@ -216,26 +268,41 @@ export function QuoteShareDialog({
       onClose={onClose}
     >
       <header className={styles.header}>
-        <ModalCloseButton aria-label={t("close")} onClick={onClose} title={t("close")} />
+        <ModalCloseButton
+          aria-label={t("close")}
+          onClick={onClose}
+          title={t("close")}
+        />
         <Text as="h1" className={styles.title} id={titleId} variant="title">
-          <span className={styles.quoteMark}>„</span>{t("title")}<span className={styles.quoteMark}>“</span>
+          <span className={styles.quoteMark}>„</span>
+          {t("title")}
+          <span className={styles.quoteMark}>“</span>
         </Text>
       </header>
       <div className={styles.layout}>
         <div className={styles.previewColumn}>
-          <PosterPreview locale={locale} onReady={setPreviewReady} options={options} quote={quote} />
+          <PosterPreview
+            locale={locale}
+            onReady={setPreviewReady}
+            options={options}
+            quote={quote}
+          />
           <SegmentedControl
             disabled={exporting}
             label={t("theme")}
             onChange={(value) => changeOptions({ dark: value === "dark" })}
             options={[
               {
-                value: "light", label: <SvgIcon svg={sunIcon} />,
-                ariaLabel: t("light"), iconOnly: true,
+                value: "light",
+                label: <SvgIcon svg={sunIcon} />,
+                ariaLabel: t("light"),
+                iconOnly: true,
               },
               {
-                value: "dark", label: <SvgIcon svg={moonIcon} />,
-                ariaLabel: t("dark"), iconOnly: true,
+                value: "dark",
+                label: <SvgIcon svg={moonIcon} />,
+                ariaLabel: t("dark"),
+                iconOnly: true,
               },
             ]}
             value={options.dark ? "dark" : "light"}
@@ -267,15 +334,32 @@ export function QuoteShareDialog({
             step={1}
             value={options.fontSize}
           />
-          <div className={styles.control}>
-            <span className={styles.label}>{t("alignment")}</span>
-            <TextAlignmentControl
-              disabled={exporting}
-              label={t("alignment")}
-              labels={alignmentLabels}
-              onChange={(alignment) => changeOptions({ alignment })}
-              value={options.alignment}
-            />
+          <div className={styles.positionControls}>
+            <div className={styles.control}>
+              <span className={styles.label}>{t("alignment")}</span>
+              <TextAlignmentControl
+                disabled={exporting}
+                label={t("alignment")}
+                labels={alignmentLabels}
+                onChange={(alignment) => changeOptions({ alignment })}
+                value={options.alignment}
+              />
+            </div>
+            <div className={styles.control}>
+              <span className={styles.label}>{t("margin")}</span>
+              <SegmentedControl<PosterMargin>
+                className={styles.marginControl}
+                disabled={exporting}
+                label={t("margin")}
+                onChange={(margin) => changeOptions({ margin })}
+                options={[
+                  { value: "large", label: "L", ariaLabel: t("largeMargin") },
+                  { value: "medium", label: "M", ariaLabel: t("mediumMargin") },
+                  { value: "small", label: "S", ariaLabel: t("smallMargin") },
+                ]}
+                value={options.margin}
+              />
+            </div>
           </div>
           <div className={styles.control}>
             <span className={styles.label}>{t("logo")}</span>
@@ -291,18 +375,40 @@ export function QuoteShareDialog({
               value={options.logo ? "on" : "off"}
             />
           </div>
-          <Button
+          <MotionButton
+            aria-label={t(exporting ? "working" : downloaded ? "downloaded" : "download")}
             className={styles.downloadButton}
-            disabled={exporting || !previewReady}
+            data-state={downloadState}
+            disabled={exporting || downloaded || !previewReady}
+            layout="size"
             onClick={() => void exportQuote()}
             size="big"
+            transition={{ layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }}
             variant="primary"
           >
-            {t(exporting ? "working" : "download")}
-          </Button>
+            <AnimatePresence initial={false} mode="wait">
+              <motion.span
+                animate={{ opacity: 1, scale: 1 }}
+                className={styles.downloadContent}
+                exit={{ opacity: 0, scale: 0.75 }}
+                initial={{ opacity: 0, scale: 0.75 }}
+                key={downloadState}
+                transition={{ duration: 0.18, ease: "easeInOut" }}
+              >
+                {exporting ? (
+                  <span aria-hidden="true" className={styles.spinner} />
+                ) : downloaded ? (
+                  <svg aria-hidden="true" className={styles.checkmark} viewBox="0 0 20 20">
+                    <path d="m4 10 4 4 8-8" />
+                  </svg>
+                ) : t("download")}
+              </motion.span>
+            </AnimatePresence>
+          </MotionButton>
           <p className={styles.status} role="status">
-            {error ? t(error) : downloaded ? t("downloaded") : ""}
+            {error ? t(error) : ""}
           </p>
+          <span className={styles.srOnly} role="status">{downloaded ? t("downloaded") : ""}</span>
         </div>
       </div>
       <div ref={menuPortalRef} />
