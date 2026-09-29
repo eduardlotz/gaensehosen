@@ -1,15 +1,11 @@
-.controlDock {
-  position: fixed;
-  bottom: 28px;
-  z-index: 44;
-}
-
-.gridDock {
-  left: 32px;
-}
-
-.sizeDock {
-  right: 32px;
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  min-height: 48px;
+  padding: 4px;
+  border-radius: 24px;
+  background: var(--color-surface-soft);
 }
 
 .segment {
@@ -30,12 +26,17 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 1;
-  transition:
-    color 180ms ease;
+  transition: color 180ms ease;
 }
 
-.segment[data-active="true"] {
+.segment:hover,
+.segment[aria-pressed="true"] {
   color: var(--color-text);
+}
+
+.segment:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .activeIndicator {
@@ -52,16 +53,6 @@
     0 1px 4px rgb(0 0 0 / 0.07);
 }
 
-.segment:hover {
-  color: var(--color-text);
-}
-
-.iconSegment {
-  width: 40px;
-  min-width: 40px;
-  padding: 0;
-}
-
 .segmentContent {
   position: relative;
   z-index: 1;
@@ -70,33 +61,8 @@
   justify-content: center;
 }
 
-.icon {
-  display: inline-flex;
-  width: 16px;
-  height: 16px;
-}
-
-.icon svg {
-  display: block;
-  width: 16px;
-  height: 16px;
-}
-
-.mobileClosedDock,
-.mobileOptionsDock {
-  display: inline-flex;
-}
-
-@media (max-width: 620px) {
-  .controlDock {
-    bottom: 24px;
-  }
-
-  .gridDock {
-    left: 16px;
-  }
-
-  .sizeDock {
-    right: 16px;
-  }
+.iconSegment {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
 }

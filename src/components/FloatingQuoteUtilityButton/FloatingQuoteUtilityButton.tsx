@@ -1,5 +1,6 @@
 import { motion, type HTMLMotionProps } from "motion/react";
 import plusIcon from "../../icons/plus.svg?raw";
+import { quickScaleFade } from "../motionTransitions";
 import { SvgIcon } from "../ui";
 import { classNames } from "../ui/classNames";
 import styles from "./FloatingQuoteUtilityButton.module.css";
@@ -33,20 +34,7 @@ export function FloatingQuoteUtilityButton({
       : styles.center;
   const closeControlsAnimation =
     state.kind === "closeControls"
-      ? {
-          animate: { opacity: 1, scale: 1 },
-          exit: { opacity: 0, scale: 0.9 },
-          initial: { opacity: 0, scale: 0.9 },
-          transition: {
-            opacity: { duration: 0.12 },
-            scale: {
-              type: "spring",
-              stiffness: 720,
-              damping: 21,
-              mass: 0.52,
-            },
-          } as const,
-        }
+      ? quickScaleFade
       : {};
 
   return (

@@ -215,7 +215,7 @@
   pointer-events: none;
 }
 
-.quoteGrid[data-form-active="true"][data-form-mode="edit"] {
+.quoteGrid[data-form-active="true"]:is([data-form-mode="edit"], [data-form-mode="view"]) {
   transform: scaleX(1.02);
 }
 
@@ -339,7 +339,7 @@
   pointer-events: none;
 }
 
-.noResultsScreen[data-form-active="true"][data-form-mode="edit"] {
+.noResultsScreen[data-form-active="true"]:is([data-form-mode="edit"], [data-form-mode="view"]) {
   transform: scaleX(0.9);
 }
 
@@ -886,7 +886,7 @@
   pointer-events: none;
 }
 
-.focusListShell[data-form-active="true"][data-form-mode="edit"] {
+.focusListShell[data-form-active="true"]:is([data-form-mode="edit"], [data-form-mode="view"]) {
   transform: scaleX(1.02);
 }
 

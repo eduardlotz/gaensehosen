@@ -37,9 +37,9 @@
   transform-origin: center;
 }
 
-.logoText {
-  fill: var(--color-text);
-  stroke: none;
+.logo svg {
+  display: block;
+  height: 40px;
 }
 
 .srOnly {

@@ -19,6 +19,7 @@ import styles from "./ModalSurface.module.css";
 type FullScreenDialogProps = AriaAttributes & {
   children: ReactNode;
   className?: string;
+  closeOnBackdrop?: boolean;
   contentClassName?: string;
   id?: string;
   onClose: () => void;
@@ -41,6 +42,7 @@ export function ModalBackdrop({
 export function FullScreenDialog({
   className,
   children,
+  closeOnBackdrop = true,
   contentClassName,
   onClose,
   restoreFocusRef,
@@ -61,7 +63,7 @@ export function FullScreenDialog({
       className={classNames(styles.backdrop, className)}
       exit={{ opacity: 0 }}
       initial={{ opacity: 0 }}
-      onMouseDown={onClose}
+      onMouseDown={closeOnBackdrop ? onClose : undefined}
       role="presentation"
       transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
     >

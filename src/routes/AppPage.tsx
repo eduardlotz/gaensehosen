@@ -36,6 +36,7 @@ import { ShortcutsDialog } from "../components/ShortcutsDialog";
 import { ConfirmationDialog } from "../components/CoreDialog";
 import { Button, Page, Section, SrOnly, SvgIcon, Text } from "../components/ui";
 import { QuoteFormModal } from "../components/QuoteFormModal";
+import { QuoteShareDialog } from "../components/QuoteShareDialog/QuoteShareDialog";
 import { quoteFormModalMessages } from "../components/QuoteFormModal/QuoteFormModal.messages";
 import { createTranslator, getLocaleMessages } from "../i18n/translate";
 import { useBodyScrollLock } from "../hooks/useBodyScrollLock";
@@ -60,7 +61,7 @@ import styles from "./AppPage.module.css";
 
 const quoteFormId = "quote-form";
 const quoteResultsId = "quote-results";
-type FormMode = "closed" | "add" | "edit";
+type FormMode = "closed" | "add" | "view" | "edit";
 type QuoteNavigationDirection = "down" | "left" | "right" | "up";
 type OptionsAction = {
   id: string;
@@ -107,23 +108,22 @@ export function AppPage() {
   const messages = getLocaleMessages(appPageMessages, locale);
   const isDesktop = useIsDesktop();
   const [query, setQuery] = useState("");
-  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<FormMode>("closed");
+  const formOpen = formMode !== "closed";
+  const [shareOpen, setShareOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [mobileOptionsOpen, setMobileOptionsOpen] =
     useState<MobileControlOptionsOpen>(null);
-  const [editingQuote, setEditingQuote] = useState<Quote | undefined>();
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string>();
+  const selectedQuote = quotes.find((quote) => quote.id === selectedQuoteId);
   const dialogReturnFocusRef = useRef<HTMLElement | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const activeGridMode = normalizeGridMode(gridMode);
   const shortcuts = getKeyboardShortcutItems(locale);
-  const formMode: FormMode = formOpen
-    ? editingQuote
-      ? "edit"
-      : "add"
-    : "closed";
+
 
   function changeLocale(nextLocale: Locale) {
     setLocale(nextLocale);
@@ -163,28 +163,29 @@ export function AppPage() {
   const welcomeSlides = useMemo(() => messages.welcomeSlides, [messages]);
 
   function openCreateForm() {
-    setEditingQuote(undefined);
-    setFormOpen(true);
+    setSelectedQuoteId(undefined);
+    setFormMode("add");
   }
 
-  function openEditForm(quote: Quote) {
-    setEditingQuote(quote);
-    setFormOpen(true);
+  function openQuote(quote: Quote) {
+    setSelectedQuoteId(quote.id);
+    setFormMode("view");
   }
 
   function closeForm() {
     setDeleteConfirmOpen(false);
-    setFormOpen(false);
-    setEditingQuote(undefined);
+    setShareOpen(false);
+    setFormMode("closed");
+    setSelectedQuoteId(undefined);
   }
 
   function confirmDeleteQuote() {
-    if (!editingQuote) {
+    if (!selectedQuote) {
       setDeleteConfirmOpen(false);
       return;
     }
 
-    removeQuote(editingQuote.id);
+    removeQuote(selectedQuote.id);
     setDeleteConfirmOpen(false);
     closeForm();
   }
@@ -252,8 +253,8 @@ export function AppPage() {
     }
   }, [isDesktop]);
 
-  useKeyPress("Escape", closeForm, {
-    enabled: formOpen && !deleteConfirmOpen,
+  useKeyPress("Escape", () => formMode === "edit" ? setFormMode("view") : closeForm(), {
+    enabled: formOpen && !deleteConfirmOpen && !shareOpen,
     preventDefault: true,
   });
 
@@ -287,7 +288,7 @@ export function AppPage() {
             onHelpClick={openHelpDialog}
             onImportClick={() => importInputRef.current?.click()}
             onLocaleChange={changeLocale}
-            onQuoteClick={openEditForm}
+            onQuoteClick={openQuote}
             onResetClick={openResetConfirmDialog}
             onShortcutsClick={openShortcutsDialog}
             onThemeChange={setTheme}
@@ -357,27 +358,44 @@ export function AppPage() {
           {formOpen ? (
             <QuoteFormModal
               formId={quoteFormId}
-              key="quote-form"
+              key={selectedQuote?.id ?? "new-quote"}
+              mode={formMode}
+              onEdit={() => setFormMode("edit")}
+              onCancel={() => setFormMode("view")}
+              onShare={() => setShareOpen(true)}
               locale={locale}
               onClose={closeForm}
               onDelete={
-                editingQuote ? () => setDeleteConfirmOpen(true) : undefined
+                selectedQuote ? () => setDeleteConfirmOpen(true) : undefined
               }
               onSave={(quote) => {
-                if (editingQuote) {
-                  updateQuote(editingQuote.id, quote);
+                if (selectedQuote) {
+                  updateQuote(selectedQuote.id, quote);
+                  setFormMode("view");
                 } else {
                   addQuote(quote);
+                  closeForm();
                 }
               }}
               open={formOpen}
-              quote={editingQuote}
+              quote={selectedQuote}
             />
           ) : null}
         </AnimatePresence>
 
         <AnimatePresence initial={false}>
-          {deleteConfirmOpen && editingQuote ? (
+          {shareOpen && selectedQuote ? (
+            <QuoteShareDialog
+              key="quote-share-dialog"
+              locale={locale}
+              quote={selectedQuote}
+              onClose={() => setShareOpen(false)}
+            />
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence initial={false}>
+          {deleteConfirmOpen && selectedQuote ? (
             <ConfirmationDialog
               cancelLabel={quoteFormT("deleteQuoteCancel")}
               confirmLabel={quoteFormT("deleteQuoteConfirm")}

@@ -11,7 +11,7 @@ import { createTranslator } from "../../i18n/translate";
 import type { FontSize, GridMode, Locale } from "../../store/collectionStore";
 import type { KeyboardShortcutItem } from "../../utils/keyboardShortcuts";
 import { ShortcutTooltip } from "../ShortcutTooltip";
-import { SvgIcon } from "../ui";
+import { SegmentedControlRoot as SegmentedControl, SvgIcon } from "../ui";
 import { classNames } from "../ui/classNames";
 import { controlsMessages } from "./Controls.messages";
 import styles from "./Controls.module.css";
@@ -431,19 +431,6 @@ function FontSizeSegmentedControl({
         );
       })}
     </SegmentedControl>
-  );
-}
-
-type SegmentedControlProps = {
-  children: ReactNode;
-  label: string;
-};
-
-function SegmentedControl({ children, label }: SegmentedControlProps) {
-  return (
-    <div className={styles.segmented} aria-label={label}>
-      {children}
-    </div>
   );
 }
 

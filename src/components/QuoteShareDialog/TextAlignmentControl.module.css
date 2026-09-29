@@ -1,0 +1,44 @@
+.root {
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  grid-template-rows: repeat(3, 40px);
+  gap: 0;
+  width: max-content;
+  border-radius: 19px;
+  padding: 2px;
+  background: var(--color-surface-soft);
+}
+
+.choice {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.choice[aria-pressed="true"] {
+  background: var(--color-surface);
+  box-shadow: 0 1px 5px rgb(0 0 0 / 0.1);
+  color: var(--color-text);
+}
+
+.choice:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.choice:disabled { cursor: not-allowed; }
+
+.icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+}

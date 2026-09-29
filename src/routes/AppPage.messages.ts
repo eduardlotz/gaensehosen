@@ -77,7 +77,7 @@ export const appPageMessages = {
         source: "Maya Angelou",
       },
       {
-        text: "Es gibt nichts Gutes, außer man tut es",
+        text: "Es gibt nichts Gutes, außer man tut es.",
         source: "Erich Kästner",
       },
       {
@@ -87,6 +87,10 @@ export const appPageMessages = {
       {
         text: "Der Kampf gegen Gipfel vermag ein Menschenherz auszufüllen. Wir müssen uns Sisyphos als einen glücklichen Menschen vorstellen.",
         source: "Albert Camus",
+      },
+      {
+        text: "Weniger, aber besser.",
+        source: "Dieter Rams",
       },
     ],
   },
@@ -122,28 +126,28 @@ export const appPageMessages = {
     theme: "Change theme",
     welcomeSlides: [
       {
-        text: "The writer struggles so the reader doesn't have to.",
-        source: "Sven Schnieders",
-      },
-      {
-        text: "I killed a plant once because I gave it too much water. Lord, I worry that love is violence.",
-        source: "José Olivarez",
+        text: "The man who does not read has no advantage over the man who cannot read.",
+        source: "Mark Twain",
       },
       {
         text: "It's hard to be poor if you're making the lives of the people around you rich.",
         source: "Michael Thompson",
       },
       {
-        text: "I make all my decisions on intuition. But then, I must know why I made that decision.",
-        source: "Ingmar Bergman",
+        text: "Fate leads the willing and drags the unwilling.",
+        source: "Seneca",
       },
       {
-        text: "The world is a museum of passion projects.",
-        source: "John Collison",
+        text: "The goal in life is not to live forever but to create something that will.",
+        source: "Andy Warhol",
       },
       {
-        text: "The man who does not read has no advantage over the man who cannot read.",
-        source: "Mark Twain",
+        text: "Yesterday is dead, tomorrow hasn't arrived yet. I have just one day, and I'm going to be happy in it.",
+        source: "Groucho Marx",
+      },
+      {
+        text: "He who has a why to live for can bear almost any how.",
+        source: "Friedrich Nietzsche",
       },
     ],
   },

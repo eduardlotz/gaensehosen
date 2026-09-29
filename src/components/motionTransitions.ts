@@ -30,3 +30,18 @@ export const controlIndicatorTransition = {
     bounce: 0.18,
   },
 } as const;
+
+export const quickScaleFade = {
+  initial: { opacity: 0, scale: 0.9 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.9 },
+  transition: {
+    opacity: { duration: 0.12 },
+    scale: {
+      type: "spring",
+      stiffness: 720,
+      damping: 21,
+      mass: 0.52,
+    },
+  },
+} as const;

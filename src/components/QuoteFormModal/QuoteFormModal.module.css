@@ -49,6 +49,16 @@
   padding: 0 1rem;
 }
 
+.readOnlyFields {
+  cursor: text;
+}
+
+.readOnlyFields:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
 .quoteField {
   position: relative;
   display: block;
@@ -217,71 +227,44 @@
 }
 
 .actionGroup {
+  position: relative;
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.actionGroup:not([data-mode="add"]) {
+  padding: 0 1rem;
+}
+
+.actionGroup[data-mode="edit"] {
+  padding: 0;
+}
+
+.primaryActions {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.primaryActions[data-mode="edit"] {
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  justify-content: center;
-  width: 100%;
-}
-
-.deleteButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   gap: 12px;
-  min-height: 50px;
-  border: 1.5px solid rgb(255 31 31 / 0.14);
-  border-radius: 25px;
-  padding: 0 18px;
-  background: rgb(255 255 255 / 0.74);
-  color: #ff1f1f;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.9),
-    0 8px 24px rgb(255 31 31 / 0.08);
-  cursor: pointer;
-  font: inherit;
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1;
 }
 
-.deleteButton:hover {
-  border-color: rgb(255 31 31 / 0.24);
-  background: rgb(255 255 255 / 0.9);
+.saveButton {
+  --button-width: min(400px, 100%);
 }
 
-.primaryButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 54px;
-  border: 1.5px solid rgb(77 100 255 / 0.5);
-  border-radius: 20px;
-  padding: 12px 18px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #4d64ff 0%, #0321ed 100%);
-  color: var(--color-brand-text);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.2),
-    inset 0 0 0 1px rgb(3 33 237 / 0.2),
-    0 2px 5px 1.5px rgb(3 33 237 / 0.05),
-    0 12px 30px rgb(3 33 237 / 0.18);
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-  text-shadow: 0 -0.5px 0.5px rgb(0 0 0 / 0.35);
-  transform-origin: 50% 50%;
-  /* will-change: transform, width, height, filter; */
-}
-
-.primaryLabel {
-  display: inline-block;
-  filter: drop-shadow(0 -0.5px 0.5px rgb(0 0 0 / 0.35));
-  transform-origin: 50% 60%;
-  will-change: transform, filter;
+.actionGroup button {
+  --button-height: 48px;
+  --button-radius: 20px;
+  --button-text-size: 1rem;
 }
 
 @media (max-width: 920px) {
@@ -297,5 +280,9 @@
 
   .editor {
     width: min(100%, calc(100vw - 36px));
+  }
+
+  .actionGroup {
+    flex-wrap: wrap;
   }
 }

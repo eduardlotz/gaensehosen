@@ -1,8 +1,10 @@
 import { AnimatePresence, motion, useAnimationControls } from "motion/react";
+import shareIcon from "../../icons/export-arrow.svg?raw";
 import trashIcon from "../../icons/trash.svg?raw";
 import { useLayoutEffect, useRef, useState } from "react";
 import { PrimaryQuoteButton } from "../PrimaryQuoteButton";
-import { Button, SrOnly, SvgIcon, Text } from "../ui";
+import { MotionButton, SrOnly, SvgIcon, Text } from "../ui";
+import { quickScaleFade } from "../motionTransitions";
 import { createTranslator } from "../../i18n/translate";
 import { useFocusTrap } from "../../hooks/useFocusTrap";
 import type { Locale, Quote } from "../../store/collectionStore";
@@ -29,6 +31,10 @@ const inputBackgroundTransition = {
 type ActiveInputBackground = "text" | "source" | null;
 
 type QuoteFormModalProps = {
+  mode: "add" | "view" | "edit";
+  onEdit: () => void;
+  onCancel: () => void;
+  onShare: () => void;
   locale: Locale;
   quote?: Quote;
   open: boolean;
@@ -40,6 +46,10 @@ type QuoteFormModalProps = {
 
 export function QuoteFormModal({
   formId,
+  mode,
+  onEdit,
+  onCancel,
+  onShare,
   locale,
   quote,
   open,
@@ -47,6 +57,7 @@ export function QuoteFormModal({
   onDelete,
   onSave,
 }: QuoteFormModalProps) {
+  const readOnly = mode === "view";
   const t = createTranslator(quoteFormModalMessages, locale);
   const [text, setText] = useState(() => quote?.text ?? "");
   const [source, setSource] = useState(() => quote?.source ?? "");
@@ -56,6 +67,7 @@ export function QuoteFormModal({
   const quotePlaceholder = t("quoteText");
   const sourcePlaceholder = t("source");
   const quoteInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const readOnlyFieldsRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
   const { handleKeyDown } = useFocusTrap({
     containerRef: editorRef,
@@ -65,13 +77,26 @@ export function QuoteFormModal({
 
   useLayoutEffect(() => {
     resizeQuoteInput();
-  }, [text]);
+  }, [text, mode]);
+
+  useLayoutEffect(() => {
+    if (mode === "view") {
+      setActiveInputBackground(null);
+      setText(quote?.text ?? "");
+      setSource(quote?.source ?? "");
+      readOnlyFieldsRef.current?.focus({ preventScroll: true });
+    } else {
+      setActiveInputBackground("text");
+      quoteInputRef.current?.focus({ preventScroll: true });
+    }
+  }, [mode, quote]);
 
   if (!open) {
     return null;
   }
 
   function saveQuote() {
+    if (readOnly) return;
     if (!text.trim()) {
       setActiveInputBackground("text");
       quoteInputRef.current?.focus();
@@ -84,7 +109,6 @@ export function QuoteFormModal({
     }
 
     onSave({ text, source });
-    onClose();
   }
 
   function resizeQuoteInput() {
@@ -120,11 +144,11 @@ export function QuoteFormModal({
       className={styles.backdrop}
       exit={{ opacity: 0 }}
       layoutRoot
-      onMouseDown={onClose}
+      onMouseDown={mode === "edit" ? undefined : onClose}
       role="presentation"
     >
       <motion.div
-        aria-label={quote ? t("editQuote") : t("addQuote")}
+        aria-label={readOnly ? t("viewQuote") : quote ? t("editQuote") : t("addQuote")}
         aria-modal="true"
         className={styles.editor}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -140,7 +164,7 @@ export function QuoteFormModal({
         transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
       >
         <Text as="h2" className={styles.title} variant="title">
-          {quote ? t("editQuote") : t("addQuote")}
+          {readOnly ? t("viewQuote") : quote ? t("editQuote") : t("addQuote")}
         </Text>
 
         <form
@@ -152,6 +176,38 @@ export function QuoteFormModal({
             saveQuote();
           }}
         >
+          {readOnly ? (
+            <div
+              aria-label={t("editQuote")}
+              className={`${styles.inputGroup} ${styles.readOnlyFields}`}
+              onClick={onEdit}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onEdit();
+                }
+              }}
+              ref={readOnlyFieldsRef}
+              role="button"
+              tabIndex={0}
+            >
+              <div className={styles.quoteField}>
+                <span className={`${styles.quoteMark} ${styles.openingQuoteMark}`}>„</span>
+                <span className={styles.quoteInputWrap}>
+                  <span className={styles.quoteMirror}>
+                    {quote?.text}<span className={styles.quoteMark}>“</span>
+                  </span>
+                </span>
+              </div>
+              {quote?.source ? (
+                <div className={styles.sourceField}>
+                  <span className={styles.sourceInputWrap}>
+                    <span className={styles.sourceMirror}>{quote.source}</span>
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          ) : (
           <div className={styles.inputGroup}>
             <motion.label
               animate={quoteShakeControls}
@@ -229,28 +285,67 @@ export function QuoteFormModal({
             </label>
           </div>
 
-          <div className={styles.actionGroup}>
-            <PrimaryQuoteButton
-              state={{
-                kind: "save",
-                label: t("saveQuote"),
-                position: "relative",
-                type: "submit",
-              }}
-              textSize="1rem"
-            />
+          )}
 
-            {quote && onDelete ? (
-              <Button
-                icon={<SvgIcon svg={trashIcon} />}
-                onClick={onDelete}
-                size="big"
-                type="button"
-                variant="danger"
-              >
-                {t("delete")}
-              </Button>
-            ) : null}
+          <div className={styles.actionGroup} data-mode={mode}>
+            {mode === "add" ? (
+              <PrimaryQuoteButton
+                state={{
+                  kind: "save",
+                  label: t("saveQuote"),
+                  position: "relative",
+                  type: "submit",
+                }}
+                textSize="1rem"
+              />
+            ) : (
+              <>
+                <div className={styles.primaryActions} data-mode={mode}>
+                  <AnimatePresence initial={false} mode="popLayout">
+                    {mode === "edit" ? (
+                      <MotionButton
+                        {...quickScaleFade}
+                        className={styles.saveButton}
+                        key="save-edit"
+                        type="submit"
+                        variant="brand"
+                      >
+                        {t("saveEdit")}
+                      </MotionButton>
+                    ) : null}
+                    {mode === "edit" ? (
+                      <MotionButton {...quickScaleFade} key="cancel-edit" onClick={onCancel}>
+                        {t("cancel")}
+                      </MotionButton>
+                    ) : null}
+                    {readOnly ? (
+                      <MotionButton
+                        {...quickScaleFade}
+                        icon={<SvgIcon svg={shareIcon} />}
+                        key="share"
+                        onClick={onShare}
+                      >
+                        {t("share")}
+                      </MotionButton>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+                <AnimatePresence initial={false} mode="popLayout">
+                  {readOnly && onDelete ? (
+                    <MotionButton
+                      {...quickScaleFade}
+                      icon={<SvgIcon svg={trashIcon} />}
+                      key="delete"
+                      onClick={onDelete}
+                      type="button"
+                      variant="danger"
+                    >
+                      {t("delete")}
+                    </MotionButton>
+                  ) : null}
+                </AnimatePresence>
+              </>
+            )}
           </div>
         </form>
       </motion.div>
