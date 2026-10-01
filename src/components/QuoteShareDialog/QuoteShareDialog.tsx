@@ -24,7 +24,6 @@ import {
   type PosterFormat,
   type PosterAlignment,
   type PosterOptions,
-  type PosterMargin,
 } from "./quotePoster";
 import { TextAlignmentControl } from "./TextAlignmentControl";
 import styles from "./QuoteShareDialog.module.css";
@@ -42,8 +41,11 @@ const defaultOptions: PosterOptions = {
   fontSize: 24,
   dark: false,
   logo: true,
-  alignment: "topLeft",
-  margin: "medium",
+  textAlignment: "topLeft",
+  sourceAlignment: "topLeft",
+  sharedAlignment: true,
+  margin: 7,
+  decoratedCorners: false,
 };
 
 function PosterPreview({
@@ -154,7 +156,11 @@ function PosterPreview({
           />
           {error ? (
             <p className={styles.previewMessage} role="status">
-              {t(error === "quote-too-long" ? "tooLong" : "renderError")}
+              <span>
+                <span className={styles.quoteMark}>„</span>
+                {t(error === "quote-too-long" ? "tooLong" : "renderError")}
+                <span className={styles.quoteMark}>“</span>
+              </span>
             </p>
           ) : null}
         </div>
@@ -258,6 +264,7 @@ export function QuoteShareDialog({
     bottomRight: t("bottomRight"),
   } satisfies Record<PosterAlignment, string>;
   const downloadState = exporting ? "loading" : downloaded ? "success" : "idle";
+  const sharedAlignment = options.sharedAlignment;
 
   return (
     <FullScreenDialog
@@ -334,46 +341,93 @@ export function QuoteShareDialog({
             step={1}
             value={options.fontSize}
           />
-          <div className={styles.positionControls}>
-            <div className={styles.control}>
-              <span className={styles.label}>{t("alignment")}</span>
-              <TextAlignmentControl
+          <RangeSlider
+            disabled={exporting}
+            label={t("margin")}
+            valueSuffix="%"
+            max={10}
+            min={0}
+            onChange={(margin) => changeOptions({ margin })}
+            step={0.5}
+            value={options.margin}
+          />
+          <div className={styles.control}>
+            <span className={styles.label}>{t("alignment")}</span>
+            <label className={styles.alignmentToggle}>
+              <span className={styles.sublabel}>{t("sharedAlignment")}</span>
+              <button
+                aria-checked={sharedAlignment}
+                aria-label={t("sharedAlignment")}
+                className={styles.switch}
                 disabled={exporting}
-                label={t("alignment")}
-                labels={alignmentLabels}
-                onChange={(alignment) => changeOptions({ alignment })}
-                value={options.alignment}
-              />
-            </div>
-            <div className={styles.control}>
-              <span className={styles.label}>{t("margin")}</span>
-              <SegmentedControl<PosterMargin>
-                className={styles.marginControl}
-                disabled={exporting}
-                label={t("margin")}
-                onChange={(margin) => changeOptions({ margin })}
-                options={[
-                  { value: "large", label: "L", ariaLabel: t("largeMargin") },
-                  { value: "medium", label: "M", ariaLabel: t("mediumMargin") },
-                  { value: "small", label: "S", ariaLabel: t("smallMargin") },
-                ]}
-                value={options.margin}
-              />
+                onClick={() => {
+                  const next = !sharedAlignment;
+                  changeOptions({
+                    sharedAlignment: next,
+                    ...(next ? { sourceAlignment: options.textAlignment } : {}),
+                  });
+                }}
+                role="switch"
+                type="button"
+              >
+                <span className={styles.switchThumb} />
+              </button>
+            </label>
+            <div className={styles.positionControls}>
+              <div className={styles.alignmentControl}>
+                {!sharedAlignment && <span className={styles.sublabel}>{t("text")}</span>}
+                <TextAlignmentControl
+                  disabled={exporting}
+                  label={t(sharedAlignment ? "alignment" : "textAlignment")}
+                  labels={alignmentLabels}
+                  onChange={(textAlignment) => changeOptions({
+                    textAlignment,
+                    ...(sharedAlignment ? { sourceAlignment: textAlignment } : {}),
+                  })}
+                  value={options.textAlignment}
+                />
+              </div>
+              {!sharedAlignment && <div className={styles.alignmentControl}>
+                <span className={styles.sublabel}>{t("source")}</span>
+                <TextAlignmentControl
+                  disabled={exporting}
+                  label={t("sourceAlignment")}
+                  labels={alignmentLabels}
+                  onChange={(sourceAlignment) => changeOptions({ sourceAlignment })}
+                  value={options.sourceAlignment}
+                />
+              </div>}
             </div>
           </div>
-          <div className={styles.control}>
-            <span className={styles.label}>{t("logo")}</span>
-            <SegmentedControl
-              className={styles.logoControl}
-              disabled={exporting}
-              label={t("logo")}
-              onChange={(logo) => changeOptions({ logo: logo === "on" })}
-              options={[
-                { value: "off", label: t("off") },
-                { value: "on", label: t("on") },
-              ]}
-              value={options.logo ? "on" : "off"}
-            />
+          <div className={styles.toggleControls}>
+            <div className={styles.control}>
+              <span className={styles.label}>{t("logo")}</span>
+              <SegmentedControl
+                className={styles.logoControl}
+                disabled={exporting}
+                label={t("logo")}
+                onChange={(logo) => changeOptions({ logo: logo === "on" })}
+                options={[
+                  { value: "off", label: t("off") },
+                  { value: "on", label: t("on") },
+                ]}
+                value={options.logo ? "on" : "off"}
+              />
+            </div>
+            <div className={styles.control}>
+              <span className={styles.label}>{t("decoratedCorners")}</span>
+              <SegmentedControl
+                className={styles.logoControl}
+                disabled={exporting}
+                label={t("decoratedCorners")}
+                onChange={(value) => changeOptions({ decoratedCorners: value === "on" })}
+                options={[
+                  { value: "on", label: t("on") },
+                  { value: "off", label: t("off") },
+                ]}
+                value={options.decoratedCorners ? "on" : "off"}
+              />
+            </div>
           </div>
           <MotionButton
             aria-label={t(exporting ? "working" : downloaded ? "downloaded" : "download")}

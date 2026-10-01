@@ -9,6 +9,7 @@ type RangeSliderProps = {
   value: number;
   onChange: (value: number) => void;
   disabled?: boolean;
+  valueSuffix?: string;
 };
 
 export function RangeSlider({
@@ -19,6 +20,7 @@ export function RangeSlider({
   value,
   onChange,
   disabled,
+  valueSuffix = "px",
 }: RangeSliderProps) {
   return (
     <Slider.Root
@@ -37,8 +39,8 @@ export function RangeSlider({
           <Slider.Track className={styles.track} />
           <Slider.Thumb
             className={styles.thumb}
-            getAriaValueText={(_, currentValue) => `${currentValue}px`}
-          >{value}</Slider.Thumb>
+            getAriaValueText={(_, currentValue) => `${Math.round(currentValue * 10) / 10}${valueSuffix}`}
+          >{Math.round(value * 10) / 10}</Slider.Thumb>
         </Slider.Control>
         {value !== max && <span aria-hidden="true" className={`${styles.bound} ${styles.maximum}`}>{max}</span>}
       </div>
