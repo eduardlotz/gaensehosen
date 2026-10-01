@@ -96,7 +96,11 @@ export async function renderQuotePoster(
   options: PosterOptions,
   outputWidth: number = posterDimensions(options.format).width,
 ) {
-  const fontFaces = await document.fonts.load('500 52px "Open Sauce Two"');
+  const fontFamily = getComputedStyle(document.documentElement).getPropertyValue("--font-sans").trim();
+  const fontFaces = await document.fonts.load(
+    `500 52px ${fontFamily}`,
+    `${quote.text}${quote.source}„“`,
+  );
   if (fontFaces.length === 0) throw new Error("font-unavailable");
   const logo = options.logo ? await getLogo(options.dark) : null;
   const dimensions = posterDimensions(options.format);
@@ -111,7 +115,7 @@ export async function renderQuotePoster(
   context.fillRect(0, 0, width, height);
 
   const quoteSize = options.fontSize * 3.25 * unit;
-  context.font = `500 ${quoteSize}px "Open Sauce Two"`;
+  context.font = `500 ${quoteSize}px ${fontFamily}`;
   const quoteMarkWidth = context.measureText("„").width;
   const selectedPadding = { small: 52, medium: 76, large: 108 }[options.margin] * unit;
   const padding = Math.max(selectedPadding, quoteMarkWidth + 24 * unit);
@@ -123,7 +127,7 @@ export async function renderQuotePoster(
   const quoteText = quote.text.trim();
 
   const quoteLines = wrapPosterText(context, `${quoteText}“`, contentWidth);
-  context.font = `500 ${sourceSize}px "Open Sauce Two"`;
+  context.font = `500 ${sourceSize}px ${fontFamily}`;
   const sourceLines = quote.source.trim()
     ? wrapPosterText(context, quote.source.trim(), contentWidth)
     : [];
@@ -146,7 +150,7 @@ export async function renderQuotePoster(
     : horizontal === "right" ? width - padding - context.measureText(line).width
       : (width - context.measureText(line).width) / 2;
   context.textBaseline = "top";
-  context.font = `500 ${quoteSize}px "Open Sauce Two"`;
+  context.font = `500 ${quoteSize}px ${fontFamily}`;
   const accent = options.dark ? "#4c6dff" : "#0321ed";
   quoteLines.forEach((line, index) => {
     const last = index === quoteLines.length - 1;
@@ -166,7 +170,7 @@ export async function renderQuotePoster(
   });
   if (sourceLines.length) {
     y += sourceGap;
-    context.font = `500 ${sourceSize}px "Open Sauce Two"`;
+    context.font = `500 ${sourceSize}px ${fontFamily}`;
     context.fillStyle = options.dark ? "#9d9c98" : "#8d8d90";
     for (const line of sourceLines) {
       context.fillText(line, lineX(line), y);

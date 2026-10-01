@@ -1,5 +1,7 @@
 :root {
-  --font-sans: "Open Sauce Two", "Helvetica Neue", Arial, system-ui, -apple-system, sans-serif;
+  --font-sans:
+    "Open Sauce Two", "Inter Display", "Helvetica Neue", Arial, system-ui,
+    -apple-system, sans-serif;
   --color-background: #ffffff;
   --color-background-rgb: 255 255 255;
   --color-surface: #ffffff;

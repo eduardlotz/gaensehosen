@@ -33,11 +33,35 @@
 }
 
 @font-face {
-  font-family: "Open Sauce Two";
-  src: url("/fonts/OpenSauceTwo/OpenSauceTwo-Black.woff2") format("woff2");
+  font-family: "Inter Display";
+  src: url("/fonts/Inter/InterDisplay-Regular.woff2") format("woff2");
   font-display: swap;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Inter Display";
+  src: url("/fonts/Inter/InterDisplay-Medium.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Inter Display";
+  src: url("/fonts/Inter/InterDisplay-SemiBold.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Inter Display";
+  src: url("/fonts/Inter/InterDisplay-Bold.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 700;
 }
 
 * {
