@@ -67,9 +67,13 @@
   cursor: grabbing;
 }
 
-.thumb:focus-visible {
+.thumb:has(input:focus-visible) {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: var(--focus-ring-offset);
+}
+
+.thumb input:focus-visible {
+  outline: 0;
 }
 
 .root[data-disabled] {
