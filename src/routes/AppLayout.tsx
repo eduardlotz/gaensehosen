@@ -8,7 +8,12 @@ const darkThemeClass = 'themeDark'
 
 export function AppLayout() {
   const theme = useCollectionStore((state) => state.theme)
+  const locale = useCollectionStore((state) => state.locale)
   const location = useLocation()
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+  }, [locale])
 
   useEffect(() => {
     const root = document.documentElement

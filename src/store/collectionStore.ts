@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { StateStorage } from "zustand/middleware";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { indexedDbStorage } from "./idbStorage";
+import { getBrowserLocale } from "../i18n/browserLocale";
 import type { ImportedQuote } from "../utils/quoteCsv";
 
 export type Locale = "de" | "en";
@@ -71,7 +72,7 @@ const collectionStorage: StateStorage = {
 const defaultCollectionState = {
   quotes: [],
   hasStartedCollection: false,
-  locale: "de",
+  locale: getBrowserLocale(),
   theme: "light",
   fontSize: 16,
   gridMode: "masonry",
@@ -137,7 +138,8 @@ export const useCollectionStore = create<CollectionState>()(
           quotes: state.quotes.filter((quote) => quote.id !== id),
         }));
       },
-      resetApp: () => set(defaultCollectionState),
+      resetApp: () =>
+        set({ ...defaultCollectionState, locale: getBrowserLocale() }),
       setLocale: (locale) => set({ locale }),
       setTheme: (theme) => set({ theme }),
       setFontSize: (fontSize) => set({ fontSize }),
