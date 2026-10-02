@@ -1,4 +1,3 @@
-import wordmarkSvg from "../../brand/wordmark.svg?raw";
 import type { Quote } from "../../store/collectionStore";
 import { resolveSharedPositions, resolveSourcePosition } from "./posterLayout";
 
@@ -23,16 +22,27 @@ export type PosterAlignment =
   | "bottomLeft"
   | "bottomCenter"
   | "bottomRight";
+export type PosterTheme = "light" | "dark" | "brand";
+
+export function posterPalette(theme: PosterTheme) {
+  if (theme === "brand") return {
+    background: "#0321ed", text: "#ffffff", accent: "#ffffff",
+  };
+  return theme === "dark"
+    ? { background: "#10100f", text: "#ffffff", accent: "#ffffff" }
+    : { background: "#ffffff", text: "#090909", accent: "#0321ed" };
+}
+
 export type PosterOptions = {
   format: PosterFormat;
   fontSize: number;
-  dark: boolean;
-  logo: boolean;
+  theme: PosterTheme;
   textAlignment: PosterAlignment;
   sourceAlignment: PosterAlignment;
   sharedAlignment: boolean;
   margin: number;
   decoratedCorners: boolean;
+  cornerSize: number;
 };
 
 export function posterDimensions(format: PosterFormat) {
@@ -51,26 +61,6 @@ export function posterFilename(source: string) {
       .slice(0, 80)
       .replace(/-$/g, "") || "quote";
   return `${name}-gaensehosen.png`;
-}
-
-const logoImages = new Map<string, Promise<HTMLImageElement>>();
-
-function getLogo(dark: boolean) {
-  const key = dark ? "dark" : "light";
-  let image = logoImages.get(key);
-  if (!image) {
-    const svg = wordmarkSvg
-      .replaceAll("currentColor", dark ? "#4c6dff" : "#0321ed")
-      .replaceAll("var(--color-text, #090909)", dark ? "#f7f6f2" : "#090909");
-    image = new Promise<HTMLImageElement>((resolve, reject) => {
-      const logo = new Image();
-      logo.onload = () => resolve(logo);
-      logo.onerror = () => reject(new Error("logo-load"));
-      logo.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-    });
-    logoImages.set(key, image);
-  }
-  return image;
 }
 
 export function wrapPosterText(
@@ -116,7 +106,6 @@ export async function renderQuotePoster(
     `${quote.text}${quote.source}„“`,
   );
   if (fontFaces.length === 0) throw new Error("font-unavailable");
-  const logo = options.logo ? await getLogo(options.dark) : null;
   const dimensions = posterDimensions(options.format);
   const { width, height } = dimensions;
   const unit = Math.min(width, height) / 1080;
@@ -127,18 +116,21 @@ export async function renderQuotePoster(
   const context = canvas.getContext("2d");
   if (!context) throw new Error("canvas-unavailable");
   context.scale(outputWidth / width, outputWidth / width);
-  context.fillStyle = options.dark ? "#10100f" : "#ffffff";
+  const palette = posterPalette(options.theme);
+  context.fillStyle = palette.background;
   context.fillRect(0, 0, width, height);
 
-  const accent = options.dark ? "#4c6dff" : "#0321ed";
+  const accent = palette.accent;
   const edgeMargin = (Math.min(width, height) * options.margin) / 100;
-  const cornerSize = 26 * unit;
+  const cornerSize = options.decoratedCorners
+    ? (Math.min(width, height) * options.cornerSize) / 100
+    : 0;
   // Undecorated margin 4 matches the reference: 7.2% across and 9% vertically.
   // Decorated posters retain the outer inset plus the gap inside the squares.
-  const horizontalPadding = options.decoratedCorners
+  const horizontalPadding = cornerSize > 0
     ? edgeMargin * 2 + cornerSize
     : edgeMargin * 1.8;
-  const verticalPadding = options.decoratedCorners
+  const verticalPadding = cornerSize > 0
     ? horizontalPadding
     : horizontalPadding * 1.25;
   const quoteSize = options.fontSize * 3.25 * unit;
@@ -159,19 +151,6 @@ export async function renderQuotePoster(
   const sourceLines = quote.source.trim()
     ? wrapPosterText(context, quote.source.trim(), contentWidth)
     : [];
-
-  const logoHeight = 52 * unit;
-  const logoWidth = logo
-    ? (logoHeight * logo.naturalWidth) / logo.naturalHeight
-    : 0;
-  const logoBounds = logo
-    ? {
-        x: (width - logoWidth) / 2,
-        y: height - 76 * unit - logoHeight,
-        width: logoWidth,
-        height: logoHeight,
-      }
-    : null;
 
   const makeBlock = (
     lines: string[],
@@ -205,9 +184,7 @@ export async function renderQuotePoster(
     const inkBottom = Math.max(...metrics.map((metric, i) => i * leading + metric.actualBoundingBoxDescent));
     const topInset = -inkTop;
     const blockHeight = inkBottom - inkTop;
-    const bottom = logoBounds && left < logoBounds.x + logoBounds.width && right > logoBounds.x
-      ? Math.min(height - verticalPadding, logoBounds.y - sourceGap)
-      : height - verticalPadding;
+    const bottom = height - verticalPadding;
     if (blockHeight > bottom - verticalPadding) throw new Error("quote-too-long");
     const y = alignment.startsWith("top")
       ? verticalPadding
@@ -263,7 +240,7 @@ export async function renderQuotePoster(
       context.fillText("„", x, y);
     }
     const body = line.slice(first ? 1 : 0, last ? -1 : undefined);
-    context.fillStyle = options.dark ? "#f7f6f2" : "#090909";
+    context.fillStyle = palette.text;
     context.fillText(body, x + (first ? quoteMarkWidth : 0), y);
     if (last) {
       context.fillStyle = accent;
@@ -271,8 +248,10 @@ export async function renderQuotePoster(
     }
   });
   if (sourceBlock) {
+    context.save();
+    context.globalAlpha = 0.5;
     context.font = `500 ${sourceSize}px ${fontFamily}`;
-    context.fillStyle = options.dark ? "#9d9c98" : "#8d8d90";
+    context.fillStyle = palette.text;
     sourceLines.forEach((line, index) => {
       context.fillText(
         line,
@@ -280,17 +259,9 @@ export async function renderQuotePoster(
         sourceBlock.y + sourceBlock.topInset + index * sourceLeading,
       );
     });
+    context.restore();
   }
-  if (logo && logoBounds) {
-    context.drawImage(
-      logo,
-      logoBounds.x,
-      logoBounds.y,
-      logoBounds.width,
-      logoBounds.height,
-    );
-  }
-  if (options.decoratedCorners) {
+  if (cornerSize > 0) {
     context.fillStyle = accent;
     for (const x of [edgeMargin, width - edgeMargin - cornerSize]) {
       for (const y of [edgeMargin, height - edgeMargin - cornerSize]) {

@@ -11,7 +11,7 @@ import { createTranslator } from "../../i18n/translate";
 import type { FontSize, GridMode, Locale } from "../../store/collectionStore";
 import type { KeyboardShortcutItem } from "../../utils/keyboardShortcuts";
 import { ShortcutTooltip } from "../ShortcutTooltip";
-import { SegmentedControlRoot as SegmentedControl, SvgIcon } from "../ui";
+import { CompactControl, SegmentedControlRoot as SegmentedControl, SvgIcon } from "../ui";
 import { classNames } from "../ui/classNames";
 import { controlsMessages } from "./Controls.messages";
 import styles from "./Controls.module.css";
@@ -211,40 +211,16 @@ function MobileControls({
                   key="mobile-grid-closed"
                   transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
                 >
-                  <SegmentedControl label={t("grid")}>
-                    <button
-                      className={classNames(styles.segment, styles.iconSegment)}
-                      data-active="true"
-                      onClick={() => onGridModeChange(gridMode)}
-                      title={
-                        activeGridMode ? t(activeGridMode.labelKey) : t("grid")
-                      }
-                      type="button"
-                    >
-                      <ActiveIndicator
-                        layoutDependency={gridMode}
-                        layoutId="mobile-grid-control-active"
-                      />
-                      <span className={styles.segmentContent}>
-                        <SvgIcon
-                          className={styles.icon}
-                          svg={activeGridMode?.icon ?? gridIcon}
-                        />
-                      </span>
-                    </button>
-
-                    <button
-                      aria-expanded={gridOptionsOpen}
-                      className={classNames(styles.segment, styles.iconSegment)}
-                      onClick={() => onMobileOptionsOpenChange?.("grid")}
-                      title={t("options")}
-                      type="button"
-                    >
-                      <span className={styles.segmentContent}>
-                        <SvgIcon className={styles.icon} svg={threeDotsIcon} />
-                      </span>
-                    </button>
-                  </SegmentedControl>
+                  <CompactControl
+                    label={t("grid")}
+                    valueLabel={activeGridMode ? t(activeGridMode.labelKey) : t("grid")}
+                    optionsLabel={t("options")}
+                    expanded={gridOptionsOpen}
+                    onValueClick={() => onGridModeChange(gridMode)}
+                    onOptionsClick={() => onMobileOptionsOpenChange?.("grid")}
+                  >
+                    <SvgIcon className={styles.icon} svg={activeGridMode?.icon ?? gridIcon} />
+                  </CompactControl>
                 </motion.div>
               )}
             </AnimatePresence>

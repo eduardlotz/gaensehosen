@@ -1,9 +1,9 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
-import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
 import { controlIndicatorTransition } from "../motionTransitions";
 import sunIcon from "../../icons/sun.svg?raw";
 import moonIcon from "../../icons/moon.svg?raw";
+import brandThemeIcon from "../../icons/brand-theme.svg?raw";
 import type { Locale, Quote, ThemeName } from "../../store/collectionStore";
 import { createTranslator } from "../../i18n/translate";
 import {
@@ -23,10 +23,12 @@ import {
   posterFilename,
   posterDimensions,
   posterFormats,
+  posterPalette,
   renderQuotePoster,
   type PosterFormat,
   type PosterAlignment,
   type PosterOptions,
+  type PosterTheme,
 } from "./quotePoster";
 import { TextAlignmentControl } from "./TextAlignmentControl";
 import styles from "./QuoteShareDialog.module.css";
@@ -40,22 +42,25 @@ const formats: PosterFormat[] = [
   "ratio9x16",
 ];
 const conditionalMotion = {
-  initial: { opacity: 0, y: 4 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: 4 },
+  initial: { opacity: 0, filter: "blur(4px)" },
+  animate: { opacity: 1, filter: "blur(0px)" },
+  exit: { opacity: 0, filter: "blur(4px)" },
   transition: { duration: 0.16, ease: "easeOut" },
+} as const;
+const downloadLayoutTransition = {
+  layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
 } as const;
 
 const defaultOptions: PosterOptions = {
   format: "ratio4x5",
   fontSize: 20,
-  dark: false,
-  logo: true,
+  theme: "light",
   textAlignment: "topLeft",
   sourceAlignment: "topLeft",
   sharedAlignment: true,
   margin: 4,
-  decoratedCorners: true,
+  decoratedCorners: false,
+  cornerSize: 4,
 };
 
 function PosterPreview({
@@ -149,13 +154,15 @@ function PosterPreview({
     <div className={styles.previewContainer}>
       <div className={styles.previewFrame} aria-busy={loading}>
         <div className={styles.previewStage} ref={stageRef}>
-          <div
+          <motion.div
+            animate={{ opacity: error ? 0.2 : 1 }}
+            transition={{ duration: 0.18 }}
             className={styles.preview}
-            data-dark={visibleOptions.dark}
+            data-theme={visibleOptions.theme}
             style={{
               width: Math.round(dimensions.width * scale),
               height: Math.round(dimensions.height * scale),
-              background: visibleOptions.dark ? "#10100f" : "#ffffff",
+              background: posterPalette(visibleOptions.theme).background,
             }}
           >
             <canvas
@@ -163,7 +170,7 @@ function PosterPreview({
               className={styles.canvas}
               ref={canvasRef}
             />
-          </div>
+          </motion.div>
         </div>
       </div>
       <AnimatePresence initial={false} mode="popLayout">
@@ -193,14 +200,12 @@ export function QuoteShareDialog({
   const menuPortalRef = useRef<HTMLDivElement>(null);
   const [options, setOptions] = useState<PosterOptions>(() => ({
     ...defaultOptions,
-    dark: theme === "dark",
+    theme: theme === "dark" ? "dark" : "light",
   }));
   const [initialized, setInitialized] = useState(false);
   const [previewReady, setPreviewReady] = useState(false);
   const controlsScrollRef = useRef<HTMLDivElement>(null);
   const controlsContentRef = useRef<HTMLDivElement>(null);
-  const previewColumnRef = useRef<HTMLDivElement>(null);
-  const [controlsHeight, setControlsHeight] = useState(584);
   const [scrollEdges, setScrollEdges] = useState({ top: false, bottom: false });
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<"exportError" | "tooLong" | null>(null);
@@ -218,7 +223,7 @@ export function QuoteShareDialog({
 
   useEffect(() => {
     let cancelled = false;
-    const initialOptions = { ...defaultOptions, dark: theme === "dark" };
+    const initialOptions: PosterOptions = { ...defaultOptions, theme: theme === "dark" ? "dark" : "light" };
     setInitialized(false);
     setPreviewReady(false);
     void fitPosterFontSize(quote, initialOptions)
@@ -238,10 +243,8 @@ export function QuoteShareDialog({
   useLayoutEffect(() => {
     const scroll = controlsScrollRef.current;
     const content = controlsContentRef.current;
-    const previewColumn = previewColumnRef.current;
-    if (!scroll || !content || !previewColumn) return;
+    if (!scroll || !content) return;
     const updateEdges = () => {
-      setControlsHeight(previewColumn.clientHeight);
       const top = scroll.scrollTop > 1;
       const bottom = scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 1;
       setScrollEdges((current) => current.top === top && current.bottom === bottom
@@ -252,7 +255,6 @@ export function QuoteShareDialog({
     const observer = new ResizeObserver(updateEdges);
     observer.observe(scroll);
     observer.observe(content);
-    observer.observe(previewColumn);
     return () => {
       scroll.removeEventListener("scroll", updateEdges);
       observer.disconnect();
@@ -325,241 +327,248 @@ export function QuoteShareDialog({
   const controlsDisabled = exporting || !initialized;
 
   return (
-    <MotionConfig reducedMotion="user">
-      <FullScreenDialog
-        aria-labelledby={titleId}
-        className={styles.backdrop}
-        closeOnBackdrop={false}
-        contentClassName={styles.dialog}
-        onClose={onClose}
-      >
-        <header className={styles.header}>
-          <ModalCloseButton
-            aria-label={t("close")}
-            onClick={onClose}
-            title={t("close")}
-          />
-          <Text as="h1" className={styles.title} id={titleId} variant="title">
-            <span className={styles.quoteMark}>„</span>
-            {t("title")}
-            <span className={styles.quoteMark}>“</span>
-          </Text>
-        </header>
-        <motion.div className={styles.layout} layoutRoot>
-          <div className={styles.previewColumn} ref={previewColumnRef}>
-            {initialized ? (
-              <PosterPreview
-                locale={locale}
-                onReady={setPreviewReady}
-                options={options}
-                quote={quote}
-              />
-            ) : <div className={styles.previewFrame} aria-busy="true" />}
-            <SegmentedControl
-              disabled={controlsDisabled}
-              label={t("theme")}
-              onChange={(value) => changeOptions({ dark: value === "dark" })}
-              options={[
-                {
-                  value: "light",
-                  label: <SvgIcon svg={sunIcon} />,
-                  ariaLabel: t("light"),
-                  iconOnly: true,
-                },
-                {
-                  value: "dark",
-                  label: <SvgIcon svg={moonIcon} />,
-                  ariaLabel: t("dark"),
-                  iconOnly: true,
-                },
-              ]}
-              value={options.dark ? "dark" : "light"}
+    <MotionConfig reducedMotion="user" transition={controlIndicatorTransition}>
+      <LayoutGroup id={titleId}>
+        <FullScreenDialog
+          aria-labelledby={titleId}
+          className={styles.backdrop}
+          closeOnBackdrop={false}
+          contentClassName={styles.dialog}
+          onClose={onClose}
+        >
+          <header className={styles.header}>
+            <ModalCloseButton
+              aria-label={t("close")}
+              onClick={onClose}
+              title={t("close")}
             />
-          </div>
-          <div
-            className={styles.controls}
-            style={{ "--controls-height": `${controlsHeight}px` } as CSSProperties}
-          >
-            <motion.div
-              className={styles.controlsScroll}
-              layoutScroll
-              data-scroll-top={scrollEdges.top}
-              data-scroll-bottom={scrollEdges.bottom}
-              ref={controlsScrollRef}
-            >
-              <div className={styles.controlsContent} ref={controlsContentRef}>
-                <div className={styles.control}>
-                  <span className={styles.label}>{t("format")}</span>
-                  <OptionMenu
+            <Text as="h1" className={styles.title} id={titleId} variant="title">
+              <span className={styles.quoteMark}>„</span>
+              {t("title")}
+              <span className={styles.quoteMark}>“</span>
+            </Text>
+          </header>
+          <div className={styles.layout}>
+            <div className={styles.previewColumn}>
+              {initialized ? (
+                <PosterPreview
+                  locale={locale}
+                  onReady={setPreviewReady}
+                  options={options}
+                  quote={quote}
+                />
+              ) : <div className={styles.previewFrame} aria-busy="true" />}
+              <div className={styles.previewTools}>
+                <SegmentedControl<PosterTheme>
+                  disabled={controlsDisabled}
+                  label={t("theme")}
+                  onChange={(theme) => changeOptions({ theme })}
+                  options={[
+                    { value: "light", label: <SvgIcon svg={sunIcon} />, ariaLabel: t("light"), iconOnly: true },
+                    { value: "dark", label: <SvgIcon svg={moonIcon} />, ariaLabel: t("dark"), iconOnly: true },
+                    { value: "brand", label: <SvgIcon svg={brandThemeIcon} />, ariaLabel: t("brand"), iconOnly: true },
+                  ]}
+                  value={options.theme}
+                />
+                <OptionMenu
+                  compact
+                  disabled={controlsDisabled}
+                  label={t("format")}
+                  onChange={(format) => changeOptions({ format })}
+                  options={formats.map((format) => ({
+                    value: format,
+                    label: formatLabel(format),
+                    textValue: `${posterFormats[format].width} × ${posterFormats[format].height} ${t(format)}`,
+                  }))}
+                  portalContainer={menuPortalRef}
+                  side="top"
+                  triggerContent={t(options.format).replace("DIN ", "")}
+                  value={options.format}
+                />
+              </div>
+            </div>
+            <motion.div className={styles.controls} layout="position">
+              <motion.div
+                className={styles.controlsScroll}
+                layout="position"
+                layoutScroll
+                data-scroll-top={scrollEdges.top}
+                data-scroll-bottom={scrollEdges.bottom}
+                ref={controlsScrollRef}
+              >
+                {/* Resize in normal flow; animate positions without scaling the fields. */}
+                <motion.div className={styles.controlsContent} layout="position" ref={controlsContentRef}>
+                  <RangeSlider
                     disabled={controlsDisabled}
-                    label={t("format")}
-                    onChange={(format) => changeOptions({ format })}
-                    options={formats.map((format) => ({
-                      value: format,
-                      label: formatLabel(format),
-                      textValue: `${posterFormats[format].width} × ${posterFormats[format].height} ${t(format)}`,
-                    }))}
-                    portalContainer={menuPortalRef}
-                    triggerContent={formatLabel(options.format)}
-                    value={options.format}
+                    label={t("fontSize")}
+                    max={40}
+                    min={10}
+                    onChange={(fontSize) => changeOptions({ fontSize })}
+                    step={1}
+                    value={options.fontSize}
                   />
-                </div>
-                <RangeSlider
-                  disabled={controlsDisabled}
-                  label={t("fontSize")}
-                  max={40}
-                  min={10}
-                  onChange={(fontSize) => changeOptions({ fontSize })}
-                  step={1}
-                  value={options.fontSize}
-                />
-                <RangeSlider
-                  disabled={controlsDisabled}
-                  label={t("margin")}
-                  valueSuffix="%"
-                  max={10}
-                  min={0}
-                  onChange={(margin) => changeOptions({ margin })}
-                  step={0.5}
-                  value={options.margin}
-                />
-                <div className={styles.control}>
-                  <span className={styles.label}>{t("alignment")}</span>
-                  <label className={styles.alignmentToggle}>
-                    <span className={styles.sublabel}>{t("sharedAlignment")}</span>
-                    <button
-                      aria-checked={sharedAlignment}
-                      aria-label={t("sharedAlignment")}
-                      className={styles.switch}
-                      disabled={controlsDisabled}
-                      onClick={() => {
-                        const next = !sharedAlignment;
-                        changeOptions({
-                          sharedAlignment: next,
-                          ...(next ? { sourceAlignment: options.textAlignment } : {}),
-                        });
-                      }}
-                      role="switch"
-                      type="button"
-                    >
-                      <motion.span
-                        className={styles.switchThumb}
-                        layout="position"
-                        transition={controlIndicatorTransition}
-                      />
-                    </button>
-                  </label>
-                  <motion.div className={styles.positionControls} layout="position" transition={controlIndicatorTransition}>
-                    <motion.div className={styles.alignmentControl} layout="position" transition={controlIndicatorTransition}>
-                      <AnimatePresence initial={false} mode="popLayout">
-                        {!sharedAlignment && (
-                          <motion.span {...conditionalMotion} className={styles.sublabel} key="text-label">{t("text")}</motion.span>
-                        )}
-                      </AnimatePresence>
-                      <TextAlignmentControl
+                  <motion.div className={styles.edgeControl} layout="position">
+                    <span className={styles.label}>{t("edge")}</span>
+                    <label className={styles.alignmentToggle}>
+                      <span className={styles.sublabel}>{t("decoratedCorners")}</span>
+                      <button
+                        aria-checked={options.decoratedCorners}
+                        aria-label={t("decoratedCorners")}
+                        className={styles.switch}
                         disabled={controlsDisabled}
-                        label={t(sharedAlignment ? "alignment" : "textAlignment")}
-                        labels={alignmentLabels}
-                        onChange={(textAlignment) => changeOptions({
-                          textAlignment,
-                          ...(sharedAlignment ? { sourceAlignment: textAlignment } : {}),
-                        })}
-                        value={options.textAlignment}
-                      />
-                    </motion.div>
+                        onClick={() => changeOptions({ decoratedCorners: !options.decoratedCorners })}
+                        role="switch"
+                        type="button"
+                      >
+                        <motion.span className={styles.switchThumb} layout="position" transition={controlIndicatorTransition} />
+                      </button>
+                    </label>
+                    <RangeSlider
+                      disabled={controlsDisabled}
+                      label={t("margin")}
+                      labelClassName={styles.sublabel}
+                      valueSuffix="%"
+                      max={10}
+                      min={0}
+                      onChange={(margin) => changeOptions({ margin })}
+                      step={0.5}
+                      value={options.margin}
+                    />
                     <AnimatePresence initial={false} mode="popLayout">
-                      {!sharedAlignment && (
-                        <motion.div
-                          {...conditionalMotion}
-                          className={styles.alignmentControl}
-                          key="source-alignment"
-                          layout="position"
-                        >
-                          <span className={styles.sublabel}>{t("source")}</span>
-                          <TextAlignmentControl
+                      {options.decoratedCorners && (
+                        <motion.div {...conditionalMotion} key="decoration-size" layout="position">
+                          <RangeSlider
                             disabled={controlsDisabled}
-                            label={t("sourceAlignment")}
-                            labels={alignmentLabels}
-                            onChange={(sourceAlignment) => changeOptions({ sourceAlignment })}
-                            value={options.sourceAlignment}
+                            label={t("decoration")}
+                            labelClassName={styles.sublabel}
+                            valueSuffix="%"
+                            max={12}
+                            min={0}
+                            onChange={(cornerSize) => changeOptions({ cornerSize })}
+                            step={1}
+                            value={options.cornerSize}
                           />
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </motion.div>
-                </div>
-                <motion.div className={styles.toggleControls} layout="position" transition={controlIndicatorTransition}>
-                  <div className={styles.control}>
-                    <span className={styles.label}>{t("logo")}</span>
-                    <SegmentedControl
-                      className={styles.logoControl}
-                      disabled={controlsDisabled}
-                      label={t("logo")}
-                      onChange={(logo) => changeOptions({ logo: logo === "on" })}
-                      options={[
-                        { value: "on", label: t("on") },
-                        { value: "off", label: t("off") },
-                      ]}
-                      value={options.logo ? "on" : "off"}
-                    />
-                  </div>
-                  <div className={styles.control}>
-                    <span className={styles.label}>{t("decoratedCorners")}</span>
-                    <SegmentedControl
-                      className={styles.logoControl}
-                      disabled={controlsDisabled}
-                      label={t("decoratedCorners")}
-                      onChange={(value) => changeOptions({ decoratedCorners: value === "on" })}
-                      options={[
-                        { value: "on", label: t("on") },
-                        { value: "off", label: t("off") },
-                      ]}
-                      value={options.decoratedCorners ? "on" : "off"}
-                    />
-                  </div>
+                  <motion.div className={styles.control} layout="position">
+                    <span className={styles.label}>{t("alignment")}</span>
+                    <label className={styles.alignmentToggle}>
+                      <span className={styles.sublabel}>{t("sharedAlignment")}</span>
+                      <button
+                        aria-checked={sharedAlignment}
+                        aria-label={t("sharedAlignment")}
+                        className={styles.switch}
+                        disabled={controlsDisabled}
+                        onClick={() => {
+                          const next = !sharedAlignment;
+                          changeOptions({
+                            sharedAlignment: next,
+                            ...(next ? { sourceAlignment: options.textAlignment } : {}),
+                          });
+                        }}
+                        role="switch"
+                        type="button"
+                      >
+                        <motion.span
+                          className={styles.switchThumb}
+                          layout="position"
+                          transition={controlIndicatorTransition}
+                        />
+                      </button>
+                    </label>
+                    <motion.div className={styles.positionControls} layout="position">
+                      <motion.div className={styles.alignmentControl} layout="position">
+                        <AnimatePresence initial={false} mode="popLayout">
+                          {!sharedAlignment && (
+                            <motion.span {...conditionalMotion} className={styles.sublabel} key="text-label">{t("text")}</motion.span>
+                          )}
+                        </AnimatePresence>
+                        <TextAlignmentControl
+                          disabled={controlsDisabled}
+                          label={t(sharedAlignment ? "alignment" : "textAlignment")}
+                          labels={alignmentLabels}
+                          onChange={(textAlignment) => changeOptions({
+                            textAlignment,
+                            ...(sharedAlignment ? { sourceAlignment: textAlignment } : {}),
+                          })}
+                          value={options.textAlignment}
+                        />
+                      </motion.div>
+                      <AnimatePresence initial={false} mode="popLayout">
+                        {!sharedAlignment && (
+                          <motion.div
+                            {...conditionalMotion}
+                            className={styles.alignmentControl}
+                            key="source-alignment"
+                            transition={{ ...conditionalMotion.transition, ...controlIndicatorTransition }}
+                            layout="position"
+                          >
+                            <span className={styles.sublabel}>{t("source")}</span>
+                            <TextAlignmentControl
+                              disabled={controlsDisabled}
+                              label={t("sourceAlignment")}
+                              labels={alignmentLabels}
+                              onChange={(sourceAlignment) => changeOptions({ sourceAlignment })}
+                              value={options.sourceAlignment}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  </motion.div>
                 </motion.div>
-              </div>
-            </motion.div>
-            <div className={styles.downloadFooter}>
-              <MotionButton
-                aria-label={t(exporting ? "working" : downloaded ? "downloaded" : "download")}
-                className={styles.downloadButton}
-                data-state={downloadState}
-                disabled={exporting || downloaded || !previewReady}
-                layout="size"
-                onClick={() => void exportQuote()}
-                size="big"
-                transition={{ layout: { duration: 0.28, ease: [0.22, 1, 0.36, 1] } }}
-                variant="primary"
-              >
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.span
-                    animate={{ opacity: 1, scale: 1 }}
-                    className={styles.downloadContent}
-                    exit={{ opacity: 0, scale: 0.75 }}
-                    initial={{ opacity: 0, scale: 0.75 }}
-                    key={downloadState}
-                    transition={{ duration: 0.18, ease: "easeInOut" }}
+              </motion.div>
+              <motion.div className={styles.downloadFooter} layout="position">
+                <div className={styles.downloadButtonFrame}>
+                  <MotionButton
+                    aria-busy={exporting}
+                    aria-label={t(exporting ? "working" : downloaded ? "downloaded" : "download")}
+                    className={styles.downloadButton}
+                    data-state={downloadState}
+                    disabled={exporting || downloaded || !previewReady}
+                    layout
+                    onClick={() => void exportQuote()}
+                    size="big"
+                    style={{ borderRadius: 16 }}
+                    transition={downloadLayoutTransition}
+                    variant="primary"
                   >
-                    {exporting ? (
-                      <span aria-hidden="true" className={styles.spinner} />
-                    ) : downloaded ? (
-                      <svg aria-hidden="true" className={styles.checkmark} viewBox="0 0 20 20">
-                        <path d="m4 10 4 4 8-8" />
-                      </svg>
-                    ) : t("download")}
-                  </motion.span>
+                    <span
+                      aria-hidden="true"
+                      className={styles.downloadSizer}
+                      style={{ width: exporting ? 18 : downloaded ? 20 : "auto" }}
+                    >{t("download")}</span>
+                  </MotionButton>
+                  <span aria-hidden="true" className={styles.downloadContentOverlay}>
+                    <AnimatePresence initial={false}>
+                      <motion.span
+                        {...conditionalMotion}
+                        className={styles.downloadContent}
+                        key={downloadState}
+                      >
+                        {exporting ? (
+                          <span aria-hidden="true" className={styles.spinner} />
+                        ) : downloaded ? (
+                          <svg aria-hidden="true" className={styles.checkmark} viewBox="0 0 20 20">
+                            <path d="m4 10 4 4 8-8" />
+                          </svg>
+                        ) : t("download")}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
+                </div>
+                <AnimatePresence initial={false} mode="popLayout">
+                  {error ? <motion.p {...conditionalMotion} className={styles.status} key={error} role="status">{t(error)}</motion.p> : null}
                 </AnimatePresence>
-              </MotionButton>
-              <AnimatePresence initial={false} mode="popLayout">
-                {error ? <motion.p {...conditionalMotion} className={styles.status} key={error} role="status">{t(error)}</motion.p> : null}
-              </AnimatePresence>
-              <span className={styles.srOnly} role="status">{downloaded ? t("downloaded") : ""}</span>
-            </div>
+                <span className={styles.srOnly} role="status">{downloaded ? t("downloaded") : ""}</span>
+              </motion.div>
+            </motion.div>
           </div>
-        </motion.div>
-        <div ref={menuPortalRef} />
-      </FullScreenDialog>
+          <div ref={menuPortalRef} />
+        </FullScreenDialog>
+      </LayoutGroup>
     </MotionConfig>
   );
 }

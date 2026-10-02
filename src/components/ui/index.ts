@@ -9,6 +9,6 @@ export {
   ModalSurface,
 } from "./ModalSurface";
 export { ScribbleInput } from "./ScribbleInput";
-export { SegmentedControl, SegmentedControlRoot } from "./SegmentedControl";
+export { CompactControl, SegmentedControl, SegmentedControlRoot } from "./SegmentedControl";
 export { SvgIcon } from "./SvgIcon";
 export { SrOnly, Text } from "./Typography";

@@ -1,6 +1,7 @@
 import { Slider } from "@base-ui/react/slider";
 import { AnimatePresence, motion } from "motion/react";
 import styles from "./RangeSlider.module.css";
+import { classNames } from "../classNames";
 
 type RangeSliderProps = {
   label: string;
@@ -11,6 +12,7 @@ type RangeSliderProps = {
   onChange: (value: number) => void;
   disabled?: boolean;
   valueSuffix?: string;
+  labelClassName?: string;
 };
 
 export function RangeSlider({
@@ -22,6 +24,7 @@ export function RangeSlider({
   onChange,
   disabled,
   valueSuffix = "px",
+  labelClassName,
 }: RangeSliderProps) {
   return (
     <Slider.Root
@@ -33,7 +36,7 @@ export function RangeSlider({
       step={step}
       value={value}
     >
-      <Slider.Label className={styles.label}>{label}</Slider.Label>
+      <Slider.Label className={classNames(styles.label, labelClassName)}>{label}</Slider.Label>
       <div className={styles.pill}>
         <AnimatePresence initial={false}>
           {value !== min && (
