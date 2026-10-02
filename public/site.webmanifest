@@ -1,7 +1,7 @@
 {
   "name": "Gänsehosen",
   "short_name": "Gänse",
-  "description": "Gänsehosen is a free, private quote collection app. Save quotes in your browser and turn your favorites into posters with a simple poster creator.",
+  "description": "A free and private quote collection app with an integrated poster creator.",
   "lang": "en",
   "id": "/",
   "start_url": "/",
