@@ -63,6 +63,8 @@ export function FullScreenDialog({
       className={classNames(styles.backdrop, className)}
       exit={{ opacity: 0 }}
       initial={{ opacity: 0 }}
+      layoutRoot
+      layoutScroll
       onMouseDown={closeOnBackdrop ? onClose : undefined}
       role="presentation"
       transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}

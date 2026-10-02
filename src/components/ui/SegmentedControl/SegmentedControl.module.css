@@ -30,6 +30,7 @@
 }
 
 .segment:hover,
+.segment[data-active="true"],
 .segment[aria-pressed="true"] {
   color: var(--color-text);
 }

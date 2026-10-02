@@ -61,6 +61,24 @@
   width: 100%;
 }
 
+.previewTools {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.edgeControl {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.previewContainer {
+  position: relative;
+  width: 100%;
+}
+
 .previewFrame {
   box-sizing: border-box;
   width: 100%;
@@ -94,26 +112,60 @@
 .previewMessage {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  padding: 20px;
-  color: #090909;
+  padding: 24px 40px;
+  pointer-events: none;
+  color: var(--color-text-muted);
   font-size: 14px;
+  font-weight: 500;
+  line-height: 1.15;
   text-align: center;
-}
-
-.preview[data-dark="true"] .previewMessage {
-  color: #f7f6f2;
 }
 
 .controls {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 26px;
+  gap: 16px;
   min-width: 0;
-  padding-top: 18px;
+  min-height: 0;
+  max-height: calc(100dvh - 180px);
+}
+
+.controlsScroll {
+  --fade-top: 0px;
+  --fade-bottom: 0px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-anchor: none;
+  overscroll-behavior-y: contain;
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top),
+    #000 calc(100% - var(--fade-bottom)), transparent);
+}
+
+.controlsScroll[data-scroll-top="true"] { --fade-top: 24px; }
+.controlsScroll[data-scroll-bottom="true"] { --fade-bottom: 24px; }
+
+.controlsContent {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 22px;
+  padding: 8px 4px 24px;
+}
+
+.downloadFooter {
+  /* Keep the action outside the scrolling fields and anchored inside its panel. */
+  display: flex;
+  position: relative;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
 }
 
 .control {
@@ -136,40 +188,116 @@
 }
 
 .positionControls {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 24px;
+  gap: 12px;
 }
 
-.marginControl {
-  flex-direction: column;
-  min-height: 0;
+.alignmentToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  flex: 0 0 48px;
   width: 48px;
-}
-
-.marginControl button {
-  flex: 0 0 40px;
-  width: 40px;
+  height: 28px;
   padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06);
+  cursor: pointer;
 }
 
-.logoControl {
-  width: max-content;
+.switch[aria-checked="true"] { background: #22df52; }
+
+.switchThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
 }
 
-.logoControl button {
-  flex: 0 0 auto;
+.switch[aria-checked="true"] .switchThumb { left: 23px; }
+
+.switch:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.switch:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.alignmentControl {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sublabel {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.downloadButtonFrame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+  width: 100%;
+  margin-top: 4px;
 }
 
 .downloadButton {
+  grid-area: 1 / 1;
+  position: relative;
   align-self: center;
-  margin-top: 4px;
 }
 
 .downloadButton:disabled[data-state="loading"],
 .downloadButton:disabled[data-state="success"] { opacity: 1; }
 
+.downloadSizer {
+  display: inline-flex;
+  height: 20px;
+  visibility: hidden;
+}
+
+.downloadContentOverlay {
+  /* Content stays centered outside the surface's layout scale. */
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: var(--color-brand-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 -0.5px 0.5px rgb(0 0 0 / 0.35);
+  transition: scale 80ms ease;
+}
+
+.downloadButton:hover + .downloadContentOverlay { scale: 1.01; }
+.downloadButton:active + .downloadContentOverlay { scale: 0.995; }
+
+.downloadButton:disabled[data-state="idle"] + .downloadContentOverlay {
+  opacity: 0.56;
+}
+
 .downloadContent {
+  grid-area: 1 / 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -215,8 +343,7 @@
 }
 
 .status {
-  min-height: 1.5em;
-  margin: -14px 0 0;
+  margin: 0;
   color: var(--color-text-muted);
   font-size: 14px;
   line-height: 1.5;
@@ -229,7 +356,7 @@
   }
 
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     gap: 28px;
   }
@@ -239,9 +366,13 @@
     max-width: 416px;
   }
 
+  .previewContainer {
+    max-width: 416px;
+  }
+
   .controls {
     width: min(100%, 416px);
-    padding-top: 0;
+    max-height: calc(100dvh - 128px);
   }
 }
 
@@ -268,7 +399,4 @@
     padding: 18px 24px;
   }
 
-  .controls {
-    gap: 22px;
-  }
 }

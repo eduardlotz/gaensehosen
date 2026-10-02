@@ -1,4 +1,7 @@
 import type { PosterAlignment } from "./quotePoster";
+import { useId } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { controlIndicatorTransition } from "../motionTransitions";
 import { SvgIcon } from "../ui";
 import topLeftIcon from "../../icons/topleft.svg?raw";
 import topCenterIcon from "../../icons/topcenter.svg?raw";
@@ -36,8 +39,16 @@ export function TextAlignmentControl({
   labels: Record<PosterAlignment, string>;
   disabled?: boolean;
 }) {
+  const indicatorId = useId();
+  const reducedMotion = useReducedMotion();
   return (
-    <div aria-label={label} className={styles.root} role="group">
+    <motion.div
+      aria-label={label}
+      className={styles.root}
+      layout="position"
+      role="group"
+      transition={reducedMotion ? { duration: 0 } : controlIndicatorTransition}
+    >
       {choices.map(({ value: choice, icon }) => (
         <button
           aria-label={labels[choice]}
@@ -49,9 +60,18 @@ export function TextAlignmentControl({
           title={labels[choice]}
           type="button"
         >
+          {value === choice ? (
+            <motion.span
+              aria-hidden="true"
+              className={styles.activeIndicator}
+              initial={false}
+              layoutId={indicatorId}
+              transition={reducedMotion ? { duration: 0 } : controlIndicatorTransition}
+            />
+          ) : null}
           <SvgIcon className={styles.icon} svg={icon.replaceAll('#292D32', 'currentColor')} />
         </button>
       ))}
-    </div>
+    </motion.div>
   );
 }
